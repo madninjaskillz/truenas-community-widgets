@@ -9,6 +9,13 @@ import json, os, zipfile, hashlib
 ROOT = os.path.dirname(os.path.abspath(__file__))
 WID = os.path.join(ROOT, "widgets")
 
+def add(z, arcname, path):
+    # Deterministic entry: fixed timestamp + mode, so Windows and CI produce identical bytes.
+    zi = zipfile.ZipInfo(arcname, date_time=(1980, 1, 1, 0, 0, 0))
+    zi.compress_type = zipfile.ZIP_DEFLATED
+    zi.external_attr = 0o644 << 16
+    z.writestr(zi, open(path, "rb").read())
+
 def build():
     widgets = []
     for wid in sorted(os.listdir(WID)):
@@ -20,13 +27,16 @@ def build():
         ver = m.get("version", "0")
         zrel = "widgets/%s/%s-%s.zip" % (wid, wid, ver)
         zpath = os.path.join(ROOT, zrel)
-        with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
-            z.write(mpath, "metadata.json")
-            src = os.path.join(wdir, "src")
-            for base, _, files in os.walk(src):
-                for fn in files:
-                    fp = os.path.join(base, fn)
-                    z.write(fp, os.path.relpath(fp, src))
+        entries = [("metadata.json", mpath)]
+        src = os.path.join(wdir, "src")
+        for base, _, files in os.walk(src):
+            for fn in files:
+                fp = os.path.join(base, fn)
+                entries.append((os.path.relpath(fp, src).replace("\\", "/"), fp))
+        entries.sort()
+        with zipfile.ZipFile(zpath, "w") as z:
+            for arc, fp in entries:
+                add(z, arc, fp)
         sha = hashlib.sha256(open(zpath, "rb").read()).hexdigest()
         widgets.append({"id": m.get("id", wid), "name": m.get("name", wid), "version": ver,
                         "description": m.get("description", ""), "author": m.get("author", ""),
