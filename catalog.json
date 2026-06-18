@@ -122,6 +122,21 @@
       "sha256": "2071144a3daad5944da3937f29cd5bc1a34d19e7ec2157f08086c0bf81aded04"
     },
     {
+      "id": "frigate-camera",
+      "name": "Frigate Camera",
+      "version": "1.0.0",
+      "description": "Live camera snapshots from Frigate, auto-refreshing. One or more camera names.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/frigate-camera/frigate-camera-1.0.0.zip",
+      "sha256": "5f00223aed1d7325717928eb961031a68813f2a4fa3bb4e9fb669b172da0526b"
+    },
+    {
       "id": "github",
       "name": "GitHub Repo",
       "version": "1.0.0",
@@ -155,6 +170,21 @@
       "sha256": "dc54bb31587a4a1b0a576b44532522641d8e9b14bb77e9c0dbe6a764aa53a6cd"
     },
     {
+      "id": "home-assistant",
+      "name": "Home Assistant",
+      "version": "1.0.0",
+      "description": "States of chosen Home Assistant entities. Needs the HA URL + a long-lived access token. (The Hub container must be able to reach your HA instance.)",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/home-assistant/home-assistant-1.0.0.zip",
+      "sha256": "d5d34ee7a8253bd15073e59171a4fd8094fb54a9a839f76a99b5e2375baf3329"
+    },
+    {
       "id": "http-endpoint",
       "name": "HTTP Endpoint",
       "version": "1.0.0",
@@ -168,6 +198,21 @@
       "permissions": [],
       "zip": "widgets/http-endpoint/http-endpoint-1.0.0.zip",
       "sha256": "87d7f83aba25961bdc43718328ff9c811781dd1df197c02bbfa072af995fde8e"
+    },
+    {
+      "id": "image",
+      "name": "Image",
+      "version": "1.0.0",
+      "description": "Show any image URL (proxied same-origin to avoid mixed-content/CORS). Optionally auto-refresh \u2014 e.g. a webcam/MJPEG snapshot URL.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/image/image-1.0.0.zip",
+      "sha256": "a0f7e70b97f099122bd5998aa0595b04192cbfdf9bb48c44626124f75b2218c5"
     },
     {
       "id": "localai",

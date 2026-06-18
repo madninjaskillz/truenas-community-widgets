@@ -184,45 +184,65 @@ def start_all():
     for wid in installed_ids(): start_producer(wid)
 
 # ---------------- widget data helpers (proxy + cert) ----------------
-def proxy_fetch(o):
-    """Server-side fetch so widget clients can hit APIs/services with per-instance
-    config (no browser CORS; secrets stay same-origin). Admin-only tool — accepts
-    self-signed TLS (common for homelab services). http/https only."""
-    url = (o or {}).get("url", "")
+def fetch_guard(url):
+    """Returns an error string if the URL must not be fetched, else None. SSRF guard:
+    blocks loopback (the Hub's own control plane), link-local and cloud metadata; private
+    LAN stays allowed for homelab services."""
     if not (url.startswith("http://") or url.startswith("https://")):
-        return {"error": "only http(s) URLs allowed"}
+        return "only http(s) URLs allowed"
     if FETCH_MODE == "off":
-        return {"error": "proxy disabled (CW_FETCH_MODE=off)"}
+        return "proxy disabled (CW_FETCH_MODE=off)"
     host = (urllib.parse.urlparse(url).hostname or "").lower()
     if FETCH_MODE == "allowlist" and not any(a in host for a in FETCH_ALLOW):
-        return {"error": "host not allowed (CW_FETCH_ALLOW)"}
-    # SSRF guard: never let widgets reach the Hub's own control plane (loopback),
-    # link-local, or cloud metadata (LAN/private ranges stay allowed for homelab services).
+        return "host not allowed (CW_FETCH_ALLOW)"
     if host in FETCH_BLOCK_HOSTS:
-        return {"error": "blocked host"}
+        return "blocked host"
     try:
         for info in socket.getaddrinfo(host, None):
             ip = ipaddress.ip_address(info[4][0])
             if ip.is_loopback or ip.is_link_local:
-                return {"error": "blocked address (loopback/link-local)"}
+                return "blocked address (loopback/link-local)"
     except Exception:
         pass
+    return None
+
+def _ssl_ctx():
+    ctx = ssl.create_default_context()
+    if not FETCH_TLS_VERIFY:
+        ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
+    return ctx
+
+def proxy_fetch(o):
+    """Server-side fetch so widget clients can hit APIs/services with per-instance
+    config (no browser CORS; secrets stay same-origin). http/https only, SSRF-guarded."""
+    url = (o or {}).get("url", "")
+    err = fetch_guard(url)
+    if err:
+        return {"error": err}
     method = (o.get("method") or "GET").upper()
     headers = o.get("headers") or {}
     data = o.get("body")
     if isinstance(data, str):
         data = data.encode()
     req = urllib.request.Request(url, data=data, method=method, headers=headers)
-    ctx = ssl.create_default_context()
-    if not FETCH_TLS_VERIFY:
-        ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
     try:
-        with urllib.request.urlopen(req, timeout=12, context=ctx) as r:
+        with urllib.request.urlopen(req, timeout=12, context=_ssl_ctx()) as r:
             return {"status": r.status, "body": r.read(FETCH_MAX_BYTES).decode("utf-8", "replace"), "headers": dict(r.getheaders())}
     except urllib.error.HTTPError as e:
         return {"status": e.code, "body": e.read(FETCH_MAX_BYTES).decode("utf-8", "replace"), "headers": dict(e.headers)}
     except Exception as e:
         return {"error": str(e)[:200]}
+
+def img_fetch(url, auth=None):
+    """Binary image passthrough (camera snapshots) so widgets can <img src> a same-origin
+    HTTPS URL instead of a blocked mixed-content / cross-origin one. SSRF-guarded."""
+    if fetch_guard(url):
+        return None
+    headers = {"User-Agent": "cw-hub"}
+    if auth:
+        headers["Authorization"] = auth
+    with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=12, context=_ssl_ctx()) as r:
+        return r.read(FETCH_MAX_BYTES), (r.headers.get("Content-Type") or "image/jpeg")
 
 def cert_info(host, port=443):
     if not host:
@@ -260,6 +280,22 @@ class H(BaseHTTPRequestHandler):
         self.end_headers()
         if self.command != "HEAD": self.wfile.write(data)
 
+    def _img(self, url, auth):
+        try:
+            res = img_fetch(url, auth)
+        except Exception as e:
+            return self._json(502, {"error": str(e)[:120]})
+        if not res:
+            return self._json(400, {"error": "blocked or invalid url"})
+        data, ct = res
+        self.send_response(200)
+        self.send_header("Content-Type", ct)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        if self.command != "HEAD":
+            self.wfile.write(data)
+
     def _parts(self):
         p = self.path.split("?", 1)[0]
         if p == "/cw" or p == "/cw/": return []
@@ -281,6 +317,9 @@ class H(BaseHTTPRequestHandler):
         if head == "cert":
             q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             return self._json(200, cert_info((q.get("host") or [""])[0], int((q.get("port") or ["443"])[0])))
+        if head == "img":
+            q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            return self._img((q.get("url") or [""])[0], (q.get("auth") or [None])[0])
         if head == "loader.js": return self._file(os.path.join(CLIENT_DIR, "loader.js"))
         if head == "lib.js": return self._file(os.path.join(CLIENT_DIR, "lib.js"))
         if head == "patch" and parts[1:] == ["patch.sh"]: return self._file(os.path.join(PATCH_DIR, "patch.sh"))

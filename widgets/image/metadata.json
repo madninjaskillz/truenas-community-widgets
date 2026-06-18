@@ -1,0 +1,14 @@
+{
+  "id": "image",
+  "name": "Image",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Show any image URL (proxied same-origin to avoid mixed-content/CORS). Optionally auto-refresh — e.g. a webcam/MJPEG snapshot URL.",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "url": { "type": "string", "label": "Image URL", "default": "" },
+    "fit": { "type": "select", "label": "Fit", "options": ["contain", "cover"], "default": "contain" },
+    "interval": { "type": "number", "label": "Refresh seconds (0 = never)", "default": 0 }
+  }
+}

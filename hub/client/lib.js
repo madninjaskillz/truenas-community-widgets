@@ -104,7 +104,9 @@
       },
       json: function (url, opts) { return this.fetch(url, opts).then(function (d) { if (d.error) throw new Error(d.error); if (d.status >= 400) throw new Error("HTTP " + d.status); return JSON.parse(d.body); }); },
       text: function (url, opts) { return this.fetch(url, opts).then(function (d) { if (d.error) throw new Error(d.error); return d.body; }); },
-      cert: function (host, port) { return fetch(base + "/cert?host=" + encodeURIComponent(host) + "&port=" + (port || 443)).then(function (r) { return r.json(); }); }
+      cert: function (host, port) { return fetch(base + "/cert?host=" + encodeURIComponent(host) + "&port=" + (port || 443)).then(function (r) { return r.json(); }); },
+      // same-origin image proxy URL (for camera snapshots; avoids mixed-content/CORS)
+      imgUrl: function (url, auth) { return base + "/img?url=" + encodeURIComponent(url) + (auth ? "&auth=" + encodeURIComponent(auth) : ""); }
     };
   };
 

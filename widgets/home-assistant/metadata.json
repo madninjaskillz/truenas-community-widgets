@@ -1,0 +1,15 @@
+{
+  "id": "home-assistant",
+  "name": "Home Assistant",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "States of chosen Home Assistant entities. Needs the HA URL + a long-lived access token. (The Hub container must be able to reach your HA instance.)",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "url": { "type": "string", "label": "Home Assistant URL", "default": "" },
+    "token": { "type": "string", "label": "Long-lived access token", "default": "" },
+    "entities": { "type": "textarea", "label": "Entity IDs (one per line, e.g. sensor.kitchen_temp)", "default": "" },
+    "interval": { "type": "number", "label": "Refresh seconds", "default": 15 }
+  }
+}
