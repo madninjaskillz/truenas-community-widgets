@@ -124,8 +124,8 @@
     {
       "id": "frigate-camera",
       "name": "Frigate Camera",
-      "version": "1.0.0",
-      "description": "Live camera snapshots from Frigate, auto-refreshing. One or more camera names.",
+      "version": "1.1.0",
+      "description": "Live Frigate cameras \u2014 auto-refreshing snapshots or a continuous MJPEG stream. One or more camera names.",
       "author": "CW",
       "supportedSizes": [
         "quarter",
@@ -133,8 +133,8 @@
         "full"
       ],
       "permissions": [],
-      "zip": "widgets/frigate-camera/frigate-camera-1.0.0.zip",
-      "sha256": "5f00223aed1d7325717928eb961031a68813f2a4fa3bb4e9fb669b172da0526b"
+      "zip": "widgets/frigate-camera/frigate-camera-1.1.0.zip",
+      "sha256": "bf3eab2428272da826246b64cdfaf2d6d19211ea656a2582181457d19f9ea117"
     },
     {
       "id": "github",

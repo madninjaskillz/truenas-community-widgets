@@ -1,15 +1,17 @@
 {
   "id": "frigate-camera",
   "name": "Frigate Camera",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "CW",
-  "description": "Live camera snapshots from Frigate, auto-refreshing. One or more camera names.",
+  "description": "Live Frigate cameras — auto-refreshing snapshots or a continuous MJPEG stream. One or more camera names.",
   "client": "client.js",
   "supportedSizes": ["quarter", "half", "full"],
   "config": {
     "url": { "type": "string", "label": "Frigate URL", "default": "" },
     "cameras": { "type": "textarea", "label": "Camera names (one per line or comma-separated)", "default": "" },
-    "height": { "type": "number", "label": "Snapshot height (px)", "default": 360 },
-    "interval": { "type": "number", "label": "Refresh seconds", "default": 2 }
+    "mode": { "type": "select", "label": "Mode", "options": ["snapshot", "stream"], "default": "snapshot" },
+    "height": { "type": "number", "label": "Height (px)", "default": 360 },
+    "fps": { "type": "number", "label": "Stream FPS", "default": 5 },
+    "interval": { "type": "number", "label": "Snapshot refresh seconds", "default": 2 }
   }
 }

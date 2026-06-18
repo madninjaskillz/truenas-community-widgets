@@ -296,6 +296,34 @@ class H(BaseHTTPRequestHandler):
         if self.command != "HEAD":
             self.wfile.write(data)
 
+    def _stream(self, url, auth):
+        # Streaming passthrough (e.g. Frigate MJPEG) — same-origin so an <img> can render it
+        # live without mixed-content/CORS. One worker thread per active stream.
+        if fetch_guard(url):
+            return self._json(400, {"error": "blocked or invalid url"})
+        headers = {"User-Agent": "cw-hub"}
+        if auth:
+            headers["Authorization"] = auth
+        try:
+            up = urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=15, context=_ssl_ctx())
+        except Exception as e:
+            return self._json(502, {"error": str(e)[:120]})
+        self.send_response(200)
+        self.send_header("Content-Type", up.headers.get("Content-Type") or "multipart/x-mixed-replace")
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        try:
+            while True:
+                chunk = up.read(65536)
+                if not chunk:
+                    break
+                self.wfile.write(chunk)
+        except Exception:
+            pass
+        finally:
+            try: up.close()
+            except Exception: pass
+
     def _parts(self):
         p = self.path.split("?", 1)[0]
         if p == "/cw" or p == "/cw/": return []
@@ -320,6 +348,9 @@ class H(BaseHTTPRequestHandler):
         if head == "img":
             q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             return self._img((q.get("url") or [""])[0], (q.get("auth") or [None])[0])
+        if head == "stream":
+            q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            return self._stream((q.get("url") or [""])[0], (q.get("auth") or [None])[0])
         if head == "loader.js": return self._file(os.path.join(CLIENT_DIR, "loader.js"))
         if head == "lib.js": return self._file(os.path.join(CLIENT_DIR, "lib.js"))
         if head == "patch" and parts[1:] == ["patch.sh"]: return self._file(os.path.join(PATCH_DIR, "patch.sh"))
