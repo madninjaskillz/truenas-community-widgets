@@ -1,0 +1,16 @@
+{
+  "id": "gpu-monitor",
+  "name": "GPU Monitor",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "NVIDIA GPU monitor — VRAM, clock, power, temperature and a selectable fan, each with a live history graph. Supports multiple GPUs and fans.",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "producer": { "cmd": ["python3", "producer.py"], "interval": 5, "outputs": ["stats.json"] },
+  "config": {
+    "graphs": { "type": "multitoggle", "label": "Graphs", "options": ["vram", "clock", "power", "temp", "fan"], "default": ["vram", "clock", "power", "temp", "fan"] },
+    "gpuIndex": { "type": "gpu", "label": "GPU", "default": 0 },
+    "fanKey": { "type": "fan", "label": "Fan source", "default": "fan1" }
+  },
+  "permissions": ["nvidia", "hwmon"]
+}

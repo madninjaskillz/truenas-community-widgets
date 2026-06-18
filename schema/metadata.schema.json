@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CW widget metadata",
+  "type": "object",
+  "required": ["id", "name", "version", "client"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "name": { "type": "string", "maxLength": 60 },
+    "version": { "type": "string" },
+    "author": { "type": "string" },
+    "description": { "type": "string" },
+    "icon": { "type": "string" },
+    "client": { "type": "string", "description": "client entry (relative path inside the package); calls CW.register(id, mount)" },
+    "supportedSizes": { "type": "array", "items": { "enum": ["quarter", "half", "full"] } },
+    "producer": {
+      "type": "object",
+      "required": ["cmd"],
+      "properties": {
+        "cmd": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "interval": { "type": "number" },
+        "outputs": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "config": { "type": "object" },
+    "permissions": { "type": "array", "items": { "type": "string" } }
+  }
+}

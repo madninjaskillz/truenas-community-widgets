@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "widgets": [
+    {
+      "id": "clock",
+      "name": "Clock",
+      "version": "1.0.0",
+      "description": "Local time and date, updating every second. A producer-less example widget \u2014 proves the install path for client-only widgets.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/clock/clock-1.0.0.zip",
+      "sha256": "7b22512ef6605152ef568c34cfea50b554e2979e71b39d8347268035a74addd8"
+    },
+    {
+      "id": "gpu-monitor",
+      "name": "GPU Monitor",
+      "version": "1.0.0",
+      "description": "NVIDIA GPU monitor \u2014 VRAM, clock, power, temperature and a selectable fan, each with a live history graph. Supports multiple GPUs and fans.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [
+        "nvidia",
+        "hwmon"
+      ],
+      "zip": "widgets/gpu-monitor/gpu-monitor-1.0.0.zip",
+      "sha256": "4e92fb048c3020705dc48e0a4d41d1c80e93b19550cfff0ca228fb72203c037e"
+    }
+  ]
+}

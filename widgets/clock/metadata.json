@@ -1,0 +1,10 @@
+{
+  "id": "clock",
+  "name": "Clock",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Local time and date, updating every second. A producer-less example widget — proves the install path for client-only widgets.",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": { "seconds": { "type": "bool", "label": "Show seconds", "default": true } }
+}

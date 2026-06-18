@@ -1,0 +1,32 @@
+name: Build catalog
+on:
+  push:
+    branches: [main]
+    paths: ["widgets/**", "build_catalog.py"]
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate metadata against schema
+        run: |
+          python3 -m pip install --quiet jsonschema
+          python3 - <<'PY'
+          import json, glob, jsonschema
+          schema = json.load(open("schema/metadata.schema.json"))
+          for m in glob.glob("widgets/*/metadata.json"):
+              jsonschema.validate(json.load(open(m)), schema)
+              print("ok", m)
+          PY
+      - name: Build zips + catalog.json
+        run: python3 build_catalog.py
+      - name: Commit catalog + zips
+        run: |
+          git config user.name "catalog-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add catalog.json widgets/*/*.zip
+          git diff --cached --quiet || git commit -m "ci: rebuild catalog [skip ci]"
+          git push
