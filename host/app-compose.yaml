@@ -9,8 +9,10 @@
 #   CW_CATALOG_URL  the widget catalog to use (raw catalog.json)
 services:
   cw-hub:
-    image: ghcr.io/madninjaskillz/cw-hub:latest
-    pull_policy: always
+    # install.sh builds this locally from ./hub (no registry needed). If you prefer the
+    # published image, set: image: ghcr.io/madninjaskillz/cw-hub:latest + pull_policy: always
+    image: cw-hub:local
+    pull_policy: never
     restart: unless-stopped
     ports:
       - "127.0.0.1:35200:8080"

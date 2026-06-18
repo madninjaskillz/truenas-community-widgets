@@ -15,7 +15,9 @@ install -m0644 "$SRC/cw-nginx.service" /etc/systemd/system/cw-nginx.service
 systemctl daemon-reload
 systemctl enable --now cw-nginx.path
 
-echo "[CW] 2/4 creating/updating the cw-hub app (image: ghcr.io/madninjaskillz/cw-hub)"
+echo "[CW] 2/4 building the Hub image (cw-hub:local) from ./hub"
+command -v docker >/dev/null || { echo "docker not found"; exit 1; }
+docker build -t cw-hub:local "$SRC/../hub" >/dev/null
 COMPOSE="$SRC/app-compose.yaml"
 if midclt call app.query "[[\"name\",\"=\",\"$APP\"]]" 2>/dev/null | grep -q "\"name\""; then
   python3 -c "import json;print(json.dumps({'custom_compose_config_string':open('$COMPOSE').read()}))" > /tmp/cw-payload.json

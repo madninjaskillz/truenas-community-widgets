@@ -6,7 +6,8 @@
 ## Requirements
 - **TrueNAS SCALE 25.10.x** (built and tested on 25.10.4; other versions may not work —
   the WebUI injection is version-specific).
-- Apps (Docker) enabled, with internet access to pull the image and reach `raw.githubusercontent.com`.
+- Apps (Docker) enabled, with internet access (to pull the `python:3.12-slim` base image
+  when building the Hub, and to reach `raw.githubusercontent.com` for the catalog).
 - Root/SSH access to the box.
 
 ## Install
@@ -19,8 +20,9 @@
    ```sh
    sudo sh host/install.sh
    ```
-   It pulls `ghcr.io/madninjaskillz/cw-hub`, creates the **cw-hub** app, installs the WebUI
-   nginx shim, and registers the store's Web UI button.
+   It builds the Hub image locally from `hub/`, creates the **cw-hub** app, installs the
+   WebUI nginx shim, and registers the store's Web UI button. (A prebuilt image is also
+   published at `ghcr.io/madninjaskillz/cw-hub` if you'd rather pull than build.)
 3. **Hard-refresh** the WebUI (Ctrl-F5).
 
 ## Using it

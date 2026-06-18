@@ -20,7 +20,7 @@ auto-restarting process (cwd=widget dir, env CW_OUT=its out/ dir); start/stop on
 install/remove without restarting the hub.
 """
 import json, os, re, threading, subprocess, time, shutil, posixpath, zipfile, hashlib, io
-import urllib.request, urllib.error, urllib.parse, ssl, socket, datetime
+import urllib.request, urllib.error, urllib.parse, ssl, socket, datetime, ipaddress
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 APP_DIR    = os.path.dirname(os.path.abspath(__file__))
@@ -37,6 +37,9 @@ CATALOG_URL = os.environ.get("CW_CATALOG_URL", os.path.join(DEVCAT, "catalog.jso
 # /cw/fetch security: "open" (default), "off" (disable), or "allowlist" (CW_FETCH_ALLOW = comma host substrings)
 FETCH_MODE  = os.environ.get("CW_FETCH_MODE", "open").lower()
 FETCH_ALLOW = [x.strip().lower() for x in os.environ.get("CW_FETCH_ALLOW", "").split(",") if x.strip()]
+FETCH_TLS_VERIFY = os.environ.get("CW_FETCH_TLS_VERIFY", "0") == "1"   # homelab services are often self-signed
+FETCH_MAX_BYTES  = int(os.environ.get("CW_FETCH_MAX_BYTES", "4194304"))  # 4 MiB response cap
+FETCH_BLOCK_HOSTS = {"169.254.169.254", "metadata.google.internal", "metadata.goog"}  # cloud metadata
 
 MIME = {".js":"application/javascript",".json":"application/json",".css":"text/css",".svg":"image/svg+xml",
         ".html":"text/html",".png":"image/png",".sh":"text/x-shellscript",".txt":"text/plain",".zip":"application/zip"}
@@ -190,22 +193,34 @@ def proxy_fetch(o):
         return {"error": "only http(s) URLs allowed"}
     if FETCH_MODE == "off":
         return {"error": "proxy disabled (CW_FETCH_MODE=off)"}
-    if FETCH_MODE == "allowlist":
-        host = (urllib.parse.urlparse(url).hostname or "").lower()
-        if not any(a in host for a in FETCH_ALLOW):
-            return {"error": "host not allowed (CW_FETCH_ALLOW)"}
+    host = (urllib.parse.urlparse(url).hostname or "").lower()
+    if FETCH_MODE == "allowlist" and not any(a in host for a in FETCH_ALLOW):
+        return {"error": "host not allowed (CW_FETCH_ALLOW)"}
+    # SSRF guard: never let widgets reach the Hub's own control plane (loopback),
+    # link-local, or cloud metadata (LAN/private ranges stay allowed for homelab services).
+    if host in FETCH_BLOCK_HOSTS:
+        return {"error": "blocked host"}
+    try:
+        for info in socket.getaddrinfo(host, None):
+            ip = ipaddress.ip_address(info[4][0])
+            if ip.is_loopback or ip.is_link_local:
+                return {"error": "blocked address (loopback/link-local)"}
+    except Exception:
+        pass
     method = (o.get("method") or "GET").upper()
     headers = o.get("headers") or {}
     data = o.get("body")
     if isinstance(data, str):
         data = data.encode()
     req = urllib.request.Request(url, data=data, method=method, headers=headers)
-    ctx = ssl.create_default_context(); ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
+    ctx = ssl.create_default_context()
+    if not FETCH_TLS_VERIFY:
+        ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
     try:
         with urllib.request.urlopen(req, timeout=12, context=ctx) as r:
-            return {"status": r.status, "body": r.read().decode("utf-8", "replace"), "headers": dict(r.getheaders())}
+            return {"status": r.status, "body": r.read(FETCH_MAX_BYTES).decode("utf-8", "replace"), "headers": dict(r.getheaders())}
     except urllib.error.HTTPError as e:
-        return {"status": e.code, "body": e.read().decode("utf-8", "replace"), "headers": dict(e.headers)}
+        return {"status": e.code, "body": e.read(FETCH_MAX_BYTES).decode("utf-8", "replace"), "headers": dict(e.headers)}
     except Exception as e:
         return {"error": str(e)[:200]}
 
