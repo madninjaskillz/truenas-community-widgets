@@ -18,7 +18,7 @@ def add(z, arcname, path):
     if os.path.splitext(arcname)[1].lower() in TEXT_EXT:
         data = data.replace(b"\r\n", b"\n")
     zi = zipfile.ZipInfo(arcname, date_time=(1980, 1, 1, 0, 0, 0))
-    zi.compress_type = zipfile.ZIP_DEFLATED
+    zi.compress_type = zipfile.ZIP_STORED   # uncompressed -> byte-identical across platforms (no zlib variance)
     zi.external_attr = 0o644 << 16
     z.writestr(zi, data)
 

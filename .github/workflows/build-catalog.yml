@@ -1,32 +1,31 @@
-name: Build catalog
+name: Validate catalog
 on:
-  push:
-    branches: [main]
-    paths: ["widgets/**", "build_catalog.py"]
+  push: {}
+  pull_request: {}
   workflow_dispatch: {}
-permissions:
-  contents: write
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate metadata against schema
+      - name: Validate metadata + catalog integrity (no rebuild)
         run: |
           python3 -m pip install --quiet jsonschema
           python3 - <<'PY'
-          import json, glob, jsonschema
+          import json, glob, hashlib, os, sys, jsonschema
           schema = json.load(open("schema/metadata.schema.json"))
-          for m in glob.glob("widgets/*/metadata.json"):
-              jsonschema.validate(json.load(open(m)), schema)
-              print("ok", m)
+          cat = {w["id"]: w for w in json.load(open("catalog.json"))["widgets"]}
+          ok = True
+          for m in sorted(glob.glob("widgets/*/metadata.json")):
+              meta = json.load(open(m)); jsonschema.validate(meta, schema)
+              e = cat.get(meta["id"])
+              if not e:
+                  print("::error:: %s missing from catalog.json" % meta["id"]); ok = False; continue
+              if not os.path.isfile(e["zip"]):
+                  print("::error:: missing zip %s" % e["zip"]); ok = False; continue
+              if hashlib.sha256(open(e["zip"], "rb").read()).hexdigest() != e["sha256"]:
+                  print("::error:: sha256 mismatch for %s — run build_catalog.py and commit" % meta["id"]); ok = False
+              else:
+                  print("ok", meta["id"])
+          sys.exit(0 if ok else 1)
           PY
-      - name: Build zips + catalog.json
-        run: python3 build_catalog.py
-      - name: Commit catalog + zips
-        run: |
-          git config user.name "catalog-bot"
-          git config user.email "bot@users.noreply.github.com"
-          git add catalog.json widgets/*/*.zip
-          git diff --cached --quiet || git commit -m "ci: rebuild catalog [skip ci]"
-          git push
