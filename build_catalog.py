@@ -9,12 +9,18 @@ import json, os, zipfile, hashlib
 ROOT = os.path.dirname(os.path.abspath(__file__))
 WID = os.path.join(ROOT, "widgets")
 
+TEXT_EXT = {".js", ".py", ".json", ".css", ".html", ".md", ".svg", ".txt", ".yaml", ".yml"}
+
 def add(z, arcname, path):
-    # Deterministic entry: fixed timestamp + mode, so Windows and CI produce identical bytes.
+    # Deterministic entry: fixed timestamp + mode, and LF-normalized text, so Windows
+    # and Linux/CI produce byte-identical zips (and matching sha256).
+    data = open(path, "rb").read()
+    if os.path.splitext(arcname)[1].lower() in TEXT_EXT:
+        data = data.replace(b"\r\n", b"\n")
     zi = zipfile.ZipInfo(arcname, date_time=(1980, 1, 1, 0, 0, 0))
     zi.compress_type = zipfile.ZIP_DEFLATED
     zi.external_attr = 0o644 << 16
-    z.writestr(zi, open(path, "rb").read())
+    z.writestr(zi, data)
 
 def build():
     widgets = []

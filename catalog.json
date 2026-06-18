@@ -14,7 +14,7 @@
       ],
       "permissions": [],
       "zip": "widgets/clock/clock-1.1.0.zip",
-      "sha256": "36271beb2bc9f0c211803741bbaf027f4ccd32b937ad78ed39e8ae7de8dedc93"
+      "sha256": "09746e5190898944af7437f286650494258362bbe46326a9f6a75f2777d31444"
     },
     {
       "id": "gpu-monitor",
@@ -32,7 +32,7 @@
         "hwmon"
       ],
       "zip": "widgets/gpu-monitor/gpu-monitor-1.2.0.zip",
-      "sha256": "1ccf3086d7623f42c07ffa0e3242e9f984fadc8b388a8b51b921ca2a5a48aed8"
+      "sha256": "aa7f73ae4298658b92b4a1d726989394c8a5dfb3ba32db617bd7ab99aeb4c50d"
     }
   ]
 }
