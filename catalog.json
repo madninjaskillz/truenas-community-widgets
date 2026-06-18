@@ -172,7 +172,7 @@
     {
       "id": "localai",
       "name": "LocalAI",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "Models available on a LocalAI / OpenAI-compatible server.",
       "author": "CW",
       "supportedSizes": [
@@ -181,8 +181,8 @@
         "full"
       ],
       "permissions": [],
-      "zip": "widgets/localai/localai-1.0.0.zip",
-      "sha256": "6d274d5dc879807d5911ec78611992cd66935db1ad75b049feaef42da0df45c9"
+      "zip": "widgets/localai/localai-1.0.1.zip",
+      "sha256": "1571e0df04a0770889de0456a532c4093d1f829a5f3b3b58bc8db0c320411596"
     },
     {
       "id": "media-server",
