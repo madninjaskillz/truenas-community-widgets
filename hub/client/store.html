@@ -1,0 +1,48 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Widget Hub</title>
+<style>
+:root{color-scheme:dark}
+body{font:14px/1.5 Roboto,Arial,sans-serif;background:#11161e;color:#e6edf3;margin:0;padding:24px;max-width:820px}
+h1{font-size:20px;margin:0 0 4px}.sub{color:#9aa4af;margin:0 0 20px;font-size:13px}
+.card{display:flex;align-items:center;gap:14px;background:#1c2330;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px 16px;margin:10px 0}
+.card .meta{flex:1;min-width:0}.card .name{font-weight:600}.card .ver{color:#9aa4af;font-size:12px;margin-left:6px}
+.card .desc{color:#9aa4af;font-size:12px;margin-top:2px}
+.tag{display:inline-block;font-size:10px;color:#9aa4af;border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:0 5px;margin-left:6px}
+button{font:inherit;border:0;border-radius:7px;padding:7px 14px;cursor:pointer;color:#fff}
+.install{background:#2563eb}.update{background:#b45309}.remove{background:transparent;color:#ff6b6b;border:1px solid rgba(255,107,107,.4)}
+button:disabled{opacity:.5;cursor:default}
+.note{color:#9aa4af;font-size:12px;margin-top:18px}.err{color:#ff8c42}
+</style></head>
+<body>
+<h1>TrueNAS Community Widgets</h1>
+<p class="sub">Install, update and remove dashboard widgets. After installing, add one from the dashboard via <b>Configure → Add → Custom</b>.</p>
+<div id="list">Loading…</div>
+<p class="note" id="src"></p>
+<script>
+function api(action, id){ return fetch('/cw/store/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(r=>r.json()); }
+function esc(s){ return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function render(cat){
+  var list=document.getElementById('list');
+  if(cat.error){ list.innerHTML='<p class="err">Catalog error: '+esc(cat.error)+'</p>'; }
+  var ws=cat.widgets||[];
+  if(!ws.length){ list.innerHTML='<p class="note">No widgets in the catalog.</p>'; return; }
+  list.innerHTML='';
+  ws.forEach(function(w){
+    var card=document.createElement('div'); card.className='card';
+    var perms=(w.permissions||[]).map(p=>'<span class="tag">'+esc(p)+'</span>').join('');
+    card.innerHTML='<div class="meta"><div><span class="name">'+esc(w.name)+'</span><span class="ver">v'+esc(w.version)+'</span>'+
+      (w.installed?'<span class="tag">installed'+(w.installedVersion&&w.installedVersion!==w.version?' v'+esc(w.installedVersion):'')+'</span>':'')+perms+'</div>'+
+      '<div class="desc">'+esc(w.description)+'</div></div>';
+    var btns=document.createElement('div');
+    function mk(label,cls,action){ var b=document.createElement('button'); b.textContent=label; b.className=cls;
+      b.onclick=function(){ b.disabled=true; b.textContent='…'; api(action,w.id).then(function(r){ if(r.error){alert(r.error); b.disabled=false;} load(); }); }; return b; }
+    if(!w.installed) btns.appendChild(mk('Install','install','install'));
+    else { if(w.updatable) btns.appendChild(mk('Update','update','update')); btns.appendChild(mk('Remove','remove','remove')); }
+    card.appendChild(btns); list.appendChild(card);
+  });
+}
+function load(){ fetch('/cw/catalog',{cache:'no-store'}).then(r=>r.json()).then(render).catch(e=>{document.getElementById('list').innerHTML='<p class="err">'+e+'</p>';}); }
+load();
+</script>
+</body></html>

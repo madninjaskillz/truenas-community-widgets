@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch nginx.conf; re-apply CW widget injection on regeneration
+
+[Path]
+PathChanged=/etc/nginx/nginx.conf
+Unit=cw-nginx.service
+
+[Install]
+WantedBy=multi-user.target

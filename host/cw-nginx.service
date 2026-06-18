@@ -1,0 +1,9 @@
+[Unit]
+Description=Apply CW widget nginx injection (fetches patch.sh from the Widget Hub)
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+# Thin shim: the patch logic itself is shipped by the container and updated via Docker.
+ExecStartPre=/bin/sleep 1
+ExecStart=/bin/sh -c 'curl -fsS --max-time 10 http://127.0.0.1:35200/cw/patch/patch.sh -o /run/cw-patch.sh && sh /run/cw-patch.sh'

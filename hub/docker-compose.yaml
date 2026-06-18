@@ -1,0 +1,26 @@
+services:
+  cw-hub:
+    build: .
+    image: cw-hub:local
+    container_name: cw-hub
+    restart: unless-stopped
+    # Loopback-only: the host nginx proxies https://<truenas>/cw/ -> here (same-origin).
+    ports:
+      - "127.0.0.1:35200:8080"
+    volumes:
+      - cw-data:/data
+    environment:
+      # `utility` exposes nvidia-smi/NVML (monitoring) without the heavier compute stack.
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility]
+    # /sys is auto-mounted read-only by Docker, so /sys/class/hwmon fan sensors are readable.
+
+volumes:
+  cw-data:

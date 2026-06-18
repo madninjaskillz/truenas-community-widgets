@@ -1,0 +1,39 @@
+# Compose for the TrueNAS-managed `cw-hub` app (created by install.sh via app.create).
+# Uses the published GHCR image so any TrueNAS box can install it.
+# x-portals adds the Apps "Web UI" button (-> https://<truenas>/cw/store via the host
+# nginx route; the Hub port stays loopback-only, never LAN-exposed).
+#
+# Security knobs (env):
+#   CW_FETCH_MODE   open (default) | off | allowlist   — controls the /cw/fetch proxy
+#   CW_FETCH_ALLOW  comma-separated host substrings (when CW_FETCH_MODE=allowlist)
+#   CW_CATALOG_URL  the widget catalog to use (raw catalog.json)
+services:
+  cw-hub:
+    image: ghcr.io/madninjaskillz/cw-hub:latest
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:35200:8080"
+    volumes:
+      - cw-hub-data:/data
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=utility
+      - CW_CATALOG_URL=https://raw.githubusercontent.com/madninjaskillz/truenas-community-widgets/main/catalog.json
+      - CW_FETCH_MODE=open
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility]
+x-portals:
+  - name: Widget Store
+    scheme: https
+    host: 0.0.0.0
+    port: 443
+    path: /cw/store
+
+volumes:
+  cw-hub-data: {}
