@@ -2,6 +2,51 @@
   "version": 1,
   "widgets": [
     {
+      "id": "adguard",
+      "name": "AdGuard Home",
+      "version": "1.0.0",
+      "description": "AdGuard Home DNS stats \u2014 queries and % blocked (uses your AdGuard login).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/adguard/adguard-1.0.0.zip",
+      "sha256": "a72853ceaad1372d7a668204b1c56df52808542a3908c5d717aaf85a1cc65ea3"
+    },
+    {
+      "id": "arr",
+      "name": "Sonarr / Radarr / Lidarr",
+      "version": "1.0.0",
+      "description": "Download queue for a *arr app (Sonarr, Radarr or Lidarr). Needs URL + API key.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/arr/arr-1.0.0.zip",
+      "sha256": "cc4e92164c18bf9519dfe34121a1e86dd07e553065f648c8b628d49e24b61ae5"
+    },
+    {
+      "id": "bookmarks",
+      "name": "Bookmarks",
+      "version": "1.0.0",
+      "description": "A grid of quick links. One per line: Label|https://url",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/bookmarks/bookmarks-1.0.0.zip",
+      "sha256": "360ed969f6cdbb5455d7e60908ff4c2c58c37eb22ac6ba34948ba3f963399ef9"
+    },
+    {
       "id": "clock",
       "name": "Clock",
       "version": "1.1.0",
@@ -15,6 +60,81 @@
       "permissions": [],
       "zip": "widgets/clock/clock-1.1.0.zip",
       "sha256": "90369625c14eb7196e170c510efbe2cfa36b8517ed5ac4ac28e5b2c2dad7a551"
+    },
+    {
+      "id": "crypto",
+      "name": "Crypto Ticker",
+      "version": "1.0.0",
+      "description": "Prices + 24h change for coins (CoinGecko, keyless). Use CoinGecko ids.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/crypto/crypto-1.0.0.zip",
+      "sha256": "3ed9b22501859e2d0cf1b20c8918f4e7de93723f2578b199c4b597347cc8b098"
+    },
+    {
+      "id": "custom-api",
+      "name": "Custom API",
+      "version": "1.0.0",
+      "description": "Fetch any JSON API and show chosen fields. Map 'Label: path.to.value' per line.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/custom-api/custom-api-1.0.0.zip",
+      "sha256": "2a901a11fafa359e67bb0f8a9605cad6d0781425b71b278a7afe088625c0523a"
+    },
+    {
+      "id": "downloads",
+      "name": "Downloads",
+      "version": "1.0.0",
+      "description": "Active downloads on qBittorrent (login) or SABnzbd (API key).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/downloads/downloads-1.0.0.zip",
+      "sha256": "b78cb5200a78be9f4c8d4f90d3030c672a2827734864ff31a15f3b9998e71610"
+    },
+    {
+      "id": "frigate",
+      "name": "Frigate",
+      "version": "1.0.0",
+      "description": "Frigate NVR \u2014 cameras and per-camera detection FPS.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/frigate/frigate-1.0.0.zip",
+      "sha256": "2071144a3daad5944da3937f29cd5bc1a34d19e7ec2157f08086c0bf81aded04"
+    },
+    {
+      "id": "github",
+      "name": "GitHub Repo",
+      "version": "1.0.0",
+      "description": "Stars, issues and forks for a GitHub repository (owner/name).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/github/github-1.0.0.zip",
+      "sha256": "3ad47da314f82de97805fa4173c23322d126d7f1611cdfe624c521a12cf63c05"
     },
     {
       "id": "gpu-monitor",
@@ -33,6 +153,186 @@
       ],
       "zip": "widgets/gpu-monitor/gpu-monitor-1.2.0.zip",
       "sha256": "dc54bb31587a4a1b0a576b44532522641d8e9b14bb77e9c0dbe6a764aa53a6cd"
+    },
+    {
+      "id": "http-endpoint",
+      "name": "HTTP Endpoint",
+      "version": "1.0.0",
+      "description": "Monitor one endpoint: status code + a live response-time graph.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/http-endpoint/http-endpoint-1.0.0.zip",
+      "sha256": "87d7f83aba25961bdc43718328ff9c811781dd1df197c02bbfa072af995fde8e"
+    },
+    {
+      "id": "localai",
+      "name": "LocalAI",
+      "version": "1.0.0",
+      "description": "Models available on a LocalAI / OpenAI-compatible server.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/localai/localai-1.0.0.zip",
+      "sha256": "6d274d5dc879807d5911ec78611992cd66935db1ad75b049feaef42da0df45c9"
+    },
+    {
+      "id": "media-server",
+      "name": "Media Server",
+      "version": "1.0.0",
+      "description": "Now-playing sessions on Plex, Jellyfin or Emby. Needs URL + token/API key.",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/media-server/media-server-1.0.0.zip",
+      "sha256": "bd79683d3422201930a064a41712b878ff9798b4f4eb15b617f8fe085289d059"
+    },
+    {
+      "id": "pihole",
+      "name": "Pi-hole",
+      "version": "1.0.0",
+      "description": "Pi-hole DNS stats \u2014 queries and % blocked today (Pi-hole v5 API token).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/pihole/pihole-1.0.0.zip",
+      "sha256": "8be346fab3e98507f9a911358acbc318ed23214239c4c00dc131c87042fb6cd2"
+    },
+    {
+      "id": "portainer",
+      "name": "Portainer",
+      "version": "1.0.0",
+      "description": "Container running/total count from a Portainer endpoint (API key).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/portainer/portainer-1.0.0.zip",
+      "sha256": "8281c0f9b1f6fc6dc7da51af35da29db3474732ef19303c30799ea5f9447a4cd"
+    },
+    {
+      "id": "proxmox",
+      "name": "Proxmox",
+      "version": "1.0.0",
+      "description": "VM/LXC running counts and statuses from Proxmox (API token).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/proxmox/proxmox-1.0.0.zip",
+      "sha256": "623a7ebb8670a305ff35479be1b9ecd84c30fe57f9c0cde96ec793e916f8513a"
+    },
+    {
+      "id": "public-ip",
+      "name": "Public IP",
+      "version": "1.0.0",
+      "description": "Your WAN IP address, ISP and location (via ip-api.com, keyless).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/public-ip/public-ip-1.0.0.zip",
+      "sha256": "76c10ec39f2e88a7cd51af2c050cb940229213e48cb00bcad905a89f536f9121"
+    },
+    {
+      "id": "rss",
+      "name": "RSS Feed",
+      "version": "1.0.0",
+      "description": "Latest headlines from one or more RSS/Atom feeds (one URL per line).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/rss/rss-1.0.0.zip",
+      "sha256": "7829d06d41f65c4c9fae1664dbe4e692d093ce606a2adf2cb79b6a6fc15c153b"
+    },
+    {
+      "id": "ssl-cert",
+      "name": "SSL Certificates",
+      "version": "1.0.0",
+      "description": "Days until TLS certificates expire. One host per line (host or host:port).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/ssl-cert/ssl-cert-1.0.0.zip",
+      "sha256": "b0e9daba4b620781ba7d2d81db3d02d3ad08631e8e851040c959e63c1aee68cf"
+    },
+    {
+      "id": "status-monitor",
+      "name": "Status Monitor",
+      "version": "1.0.0",
+      "description": "Up/down + latency for a list of services. One per line: Label|https://url",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/status-monitor/status-monitor-1.0.0.zip",
+      "sha256": "fe3459c18d73be1429e15adfe3301a1e2e42c83229071355f8bbe270c54af4f2"
+    },
+    {
+      "id": "uptime-kuma",
+      "name": "Uptime Kuma",
+      "version": "1.0.0",
+      "description": "Monitor states from an Uptime Kuma status page (needs the status-page slug).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/uptime-kuma/uptime-kuma-1.0.0.zip",
+      "sha256": "25e17220cd0959c0c99945d2486ac79f120546a7f3c101cecf1e65a9c548cf48"
+    },
+    {
+      "id": "weather",
+      "name": "Weather",
+      "version": "1.0.0",
+      "description": "Current conditions + 3-day forecast for a city (Open-Meteo, keyless).",
+      "author": "CW",
+      "supportedSizes": [
+        "quarter",
+        "half",
+        "full"
+      ],
+      "permissions": [],
+      "zip": "widgets/weather/weather-1.0.0.zip",
+      "sha256": "88e3599cc6f3e7a2caa16ce9823ab400ee8dc6d3d4056388ee3930abd6dca123"
     }
   ]
 }

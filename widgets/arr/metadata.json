@@ -1,0 +1,15 @@
+{
+  "id": "arr",
+  "name": "Sonarr / Radarr / Lidarr",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Download queue for a *arr app (Sonarr, Radarr or Lidarr). Needs URL + API key.",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "type": { "type": "select", "label": "App", "options": ["sonarr", "radarr", "lidarr"], "default": "sonarr" },
+    "url": { "type": "string", "label": "URL", "default": "" },
+    "apikey": { "type": "string", "label": "API key", "default": "" },
+    "interval": { "type": "number", "label": "Refresh seconds", "default": 60 }
+  }
+}

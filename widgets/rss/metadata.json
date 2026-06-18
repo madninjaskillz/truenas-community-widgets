@@ -1,0 +1,14 @@
+{
+  "id": "rss",
+  "name": "RSS Feed",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Latest headlines from one or more RSS/Atom feeds (one URL per line).",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "feeds": { "type": "textarea", "label": "Feed URLs (one per line)", "default": "" },
+    "count": { "type": "number", "label": "Headlines", "default": 10 },
+    "interval": { "type": "number", "label": "Refresh seconds", "default": 900 }
+  }
+}

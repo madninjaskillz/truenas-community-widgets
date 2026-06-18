@@ -1,0 +1,13 @@
+{
+  "id": "frigate",
+  "name": "Frigate",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Frigate NVR — cameras and per-camera detection FPS.",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "url": { "type": "string", "label": "Frigate URL", "default": "" },
+    "interval": { "type": "number", "label": "Refresh seconds", "default": 15 }
+  }
+}

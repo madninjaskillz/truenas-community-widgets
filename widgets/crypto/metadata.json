@@ -1,0 +1,14 @@
+{
+  "id": "crypto",
+  "name": "Crypto Ticker",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Prices + 24h change for coins (CoinGecko, keyless). Use CoinGecko ids.",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "coins": { "type": "string", "label": "Coins (comma ids, e.g. bitcoin,ethereum)", "default": "bitcoin,ethereum" },
+    "currency": { "type": "string", "label": "Currency", "default": "usd" },
+    "interval": { "type": "number", "label": "Refresh seconds", "default": 120 }
+  }
+}

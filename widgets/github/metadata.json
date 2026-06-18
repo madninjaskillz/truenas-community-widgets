@@ -1,0 +1,13 @@
+{
+  "id": "github",
+  "name": "GitHub Repo",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Stars, issues and forks for a GitHub repository (owner/name).",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "repo": { "type": "string", "label": "Repository (owner/name)", "default": "" },
+    "token": { "type": "string", "label": "Token (optional, for private/rate limit)", "default": "" }
+  }
+}

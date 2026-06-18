@@ -1,0 +1,10 @@
+{
+  "id": "public-ip",
+  "name": "Public IP",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Your WAN IP address, ISP and location (via ip-api.com, keyless).",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {}
+}

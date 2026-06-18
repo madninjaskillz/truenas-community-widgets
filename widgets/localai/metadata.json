@@ -1,0 +1,12 @@
+{
+  "id": "localai",
+  "name": "LocalAI",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Models available on a LocalAI / OpenAI-compatible server.",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "url": { "type": "string", "label": "Server URL", "default": "http://127.0.0.1:30286" }
+  }
+}

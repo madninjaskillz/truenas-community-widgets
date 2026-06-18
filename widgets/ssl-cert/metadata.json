@@ -1,0 +1,12 @@
+{
+  "id": "ssl-cert",
+  "name": "SSL Certificates",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Days until TLS certificates expire. One host per line (host or host:port).",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "hosts": { "type": "textarea", "label": "Hosts (host or host:port per line)", "default": "" }
+  }
+}

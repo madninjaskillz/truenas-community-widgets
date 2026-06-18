@@ -1,0 +1,14 @@
+{
+  "id": "weather",
+  "name": "Weather",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Current conditions + 3-day forecast for a city (Open-Meteo, keyless).",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "city": { "type": "string", "label": "City", "default": "" },
+    "units": { "type": "select", "label": "Units", "options": ["metric", "imperial"], "default": "metric" },
+    "interval": { "type": "number", "label": "Refresh seconds", "default": 900 }
+  }
+}

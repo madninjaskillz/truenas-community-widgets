@@ -1,0 +1,14 @@
+{
+  "id": "proxmox",
+  "name": "Proxmox",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "VM/LXC running counts and statuses from Proxmox (API token).",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "url": { "type": "string", "label": "Proxmox URL", "default": "" },
+    "token": { "type": "string", "label": "API token (user@realm!id=secret)", "default": "" },
+    "interval": { "type": "number", "label": "Refresh seconds", "default": 30 }
+  }
+}

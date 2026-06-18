@@ -1,0 +1,15 @@
+{
+  "id": "media-server",
+  "name": "Media Server",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Now-playing sessions on Plex, Jellyfin or Emby. Needs URL + token/API key.",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "type": { "type": "select", "label": "Server", "options": ["plex", "jellyfin", "emby"], "default": "plex" },
+    "url": { "type": "string", "label": "URL", "default": "" },
+    "token": { "type": "string", "label": "Token / API key", "default": "" },
+    "interval": { "type": "number", "label": "Refresh seconds", "default": 30 }
+  }
+}

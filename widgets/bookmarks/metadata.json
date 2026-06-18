@@ -1,0 +1,13 @@
+{
+  "id": "bookmarks",
+  "name": "Bookmarks",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "A grid of quick links. One per line: Label|https://url",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "links": { "type": "textarea", "label": "Links (Label|URL per line)", "default": "" },
+    "columns": { "type": "number", "label": "Columns", "default": 1 }
+  }
+}

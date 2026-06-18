@@ -1,0 +1,14 @@
+{
+  "id": "pihole",
+  "name": "Pi-hole",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Pi-hole DNS stats — queries and % blocked today (Pi-hole v5 API token).",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "url": { "type": "string", "label": "Pi-hole URL", "default": "" },
+    "token": { "type": "string", "label": "API token", "default": "" },
+    "interval": { "type": "number", "label": "Refresh seconds", "default": 60 }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "portainer",
+  "name": "Portainer",
+  "version": "1.0.0",
+  "author": "CW",
+  "description": "Container running/total count from a Portainer endpoint (API key).",
+  "client": "client.js",
+  "supportedSizes": ["quarter", "half", "full"],
+  "config": {
+    "url": { "type": "string", "label": "Portainer URL", "default": "" },
+    "apikey": { "type": "string", "label": "API key (X-API-Key)", "default": "" },
+    "endpoint": { "type": "number", "label": "Endpoint ID (blank = first)", "default": null },
+    "interval": { "type": "number", "label": "Refresh seconds", "default": 30 }
+  }
+}
