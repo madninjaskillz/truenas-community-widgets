@@ -1,10 +1,13 @@
 {
   "id": "clock",
   "name": "Clock",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "CW",
-  "description": "Local time and date, updating every second. A producer-less example widget — proves the install path for client-only widgets.",
+  "description": "Local (or any time zone) clock with date, updating every second. A producer-less example widget — supports multiple independent instances.",
   "client": "client.js",
   "supportedSizes": ["quarter", "half", "full"],
-  "config": { "seconds": { "type": "bool", "label": "Show seconds", "default": true } }
+  "config": {
+    "timezone": { "type": "timezone", "label": "Time zone", "default": "" },
+    "seconds": { "type": "bool", "label": "Show seconds", "default": true }
+  }
 }
