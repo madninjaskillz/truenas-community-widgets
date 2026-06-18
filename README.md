@@ -58,4 +58,6 @@ while True:
     json.dump({"value": 42}, open(out, "w")); time.sleep(int(os.environ.get("CW_INTERVAL", "5")))
 ```
 
-Open a PR. CI validates `metadata.json`, builds the zip, and updates `catalog.json`.
+Run `python build_catalog.py` to (re)build your zip and update `catalog.json`, commit
+both, and open a PR. CI **validates** metadata + that each `catalog.json` sha256 matches
+the committed zip (it does not rebuild), so always run the builder before committing.
