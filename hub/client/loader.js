@@ -51,7 +51,16 @@
   // ---- Add-Widget picker: turn the Arbitrary-Text "Widget Text" field into a widget chooser ----
   function uuid() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-    return "x" + Date.now().toString(16) + Math.floor(Math.random() * 1e9).toString(16);
+    // crypto.randomUUID() needs a secure context (HTTPS); getRandomValues() doesn't, so
+    // this still gets proper entropy over plain-HTTP TrueNAS installs instead of a weak
+    // Date.now()+Math.random() id that risks colliding with (and inheriting the stored
+    // config of) an unrelated widget instance.
+    var a = new Uint8Array(16);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+    else for (var i = 0; i < 16; i++) a[i] = Math.floor(Math.random() * 256);
+    a[6] = (a[6] & 0x0f) | 0x40; a[8] = (a[8] & 0x3f) | 0x80;
+    var h = Array.prototype.map.call(a, function (b) { return (b < 16 ? "0" : "") + b.toString(16); }).join("");
+    return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20);
   }
   function setNative(input, val) {
     if (!input) return;
@@ -179,14 +188,47 @@
     if (widId) reconfigure(form, widId);
   }
 
+  // Preferred: a real topbar icon button cloned from "Send Feedback" (same classes/ripple
+  // shell, so it matches TrueNAS's own styling instead of us reimplementing it). Falls back
+  // to the floating pill button if the topbar markup doesn't match (older/newer WebUI).
+  function mountTopbarStoreButton() {
+    var feedbackBtn = document.querySelector('.topbar-mobile-footer button[ixtest="leave-feedback"]');
+    if (!feedbackBtn) return false;
+    var span = feedbackBtn.parentElement;
+    var anchor = (span && span.tagName === "SPAN") ? span : feedbackBtn;
+    var wrap = anchor.cloneNode(true);
+    var btn = wrap.tagName === "BUTTON" ? wrap : wrap.querySelector('button[ixtest="leave-feedback"]');
+    if (!btn) return false;
+    wrap.id = "cw-store-btn-topbar";
+    wrap.removeAttribute("aria-describedby"); wrap.removeAttribute("cdk-describedby-host");
+    btn.removeAttribute("id"); btn.removeAttribute("aria-describedby");
+    btn.setAttribute("ixtest", "cw-store"); btn.setAttribute("data-test", "button-cw-store");
+    btn.setAttribute("aria-label", "Widget Store");
+    btn.title = "Browse and install dashboard widgets";
+    var icon = btn.querySelector("ix-icon");
+    var glyph = CW.h("span", { style: "font-size:19px;line-height:24px;width:24px;height:24px;display:inline-block;text-align:center" }, ["🧩"]);
+    if (icon) icon.replaceWith(glyph); else btn.appendChild(glyph);
+    btn.addEventListener("click", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      window.open("/cw/store", "_blank", "noopener");
+    });
+    anchor.parentNode.insertBefore(wrap, anchor);
+    return true;
+  }
   function ensureStoreButton() {
     var onDash = /\/dashboard/.test(location.pathname);
-    var btn = document.getElementById("cw-store-btn");
-    if (onDash && !btn) {
-      btn = CW.h("a", { id: "cw-store-btn", "class": "cw-store-btn", href: "/cw/store", target: "_blank", rel: "noopener",
+    if (!onDash) {
+      var t = document.getElementById("cw-store-btn-topbar"); if (t) t.remove();
+      var f = document.getElementById("cw-store-btn-float"); if (f) f.remove();
+      return;
+    }
+    if (document.getElementById("cw-store-btn-topbar")) return;
+    try { if (mountTopbarStoreButton()) { var f2 = document.getElementById("cw-store-btn-float"); if (f2) f2.remove(); return; } } catch (e) {}
+    if (!document.getElementById("cw-store-btn-float")) {
+      var btn = CW.h("a", { id: "cw-store-btn-float", "class": "cw-store-btn", href: "/cw/store", target: "_blank", rel: "noopener",
         title: "Browse and install dashboard widgets", html: "&#129513; Widget Store" });
       document.body.appendChild(btn);
-    } else if (!onDash && btn) { btn.remove(); }
+    }
   }
 
   function scan() {
