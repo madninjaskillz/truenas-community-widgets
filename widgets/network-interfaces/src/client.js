@@ -9,9 +9,25 @@
       return mbps >= 1000 ? (mbps % 1000 ? (mbps / 1000).toFixed(1) : (mbps / 1000)) + " Gbps" : mbps + " Mbps";
     }
     function tick() {
-      if (!cfg.url || !cfg.apikey) { root.innerHTML = '<div class="cw-hint">⚙ Set TrueNAS URL + API key</div>'; return Promise.resolve(); }
-      var base = cfg.url.replace(/\/+$/, "");
-      return ctx.json(base + "/api/v2.0/interface", { headers: { "Authorization": "Bearer " + cfg.apikey } }).then(function (list) {
+      var url = (cfg.url || "").trim(), key = (cfg.apikey || "").trim();
+      if (!url || !key) {
+        var missing = []; if (!url) missing.push("URL"); if (!key) missing.push("API key");
+        root.innerHTML = '<div class="cw-hint">⚙ Set TrueNAS ' + missing.join(" + ") +
+          '<br><span style="opacity:.7">URL e.g. https://192.168.1.50 &middot; key from Settings &rarr; API Keys</span></div>';
+        return Promise.resolve();
+      }
+      if (!/^https?:\/\//i.test(url)) {
+        root.innerHTML = '<div class="cw-err">URL must start with http:// or https:// (e.g. https://192.168.1.50)</div>';
+        return Promise.resolve();
+      }
+      var base = url.replace(/\/+$/, "");
+      return ctx.fetch(base + "/api/v2.0/interface", { headers: { "Authorization": "Bearer " + key } }).then(function (d) {
+        if (d.error) throw new Error("Can't reach " + base + " — " + d.error);
+        if (d.status === 401 || d.status === 403) throw new Error("TrueNAS rejected the API key (HTTP " + d.status + ") — check it's valid and hasn't expired");
+        if (d.status === 404) throw new Error("HTTP 404 — check the URL is your TrueNAS base URL (e.g. https://192.168.1.50), not a /ui or /api path");
+        if (d.status >= 400) throw new Error("TrueNAS returned HTTP " + d.status);
+        var list;
+        try { list = JSON.parse(d.body); } catch (e) { throw new Error("Unexpected (non-JSON) response — check the URL"); }
         var rows = (list || []).map(function (i) {
           var st = i.state || {}, up = st.link_state === "LINK_STATE_UP";
           var speed = up ? speedLabel(st.active_media_subtype) : "";
@@ -19,7 +35,7 @@
             '">' + (up ? "● " + CW.esc(speed || "up") : "● down") + '</span></div>';
         });
         root.innerHTML = rows.length ? '<div class="cw-rows">' + rows.join("") + '</div>' : '<div class="cw-hint">No interfaces found</div>';
-      }).catch(function (e) { root.innerHTML = '<div class="cw-err">' + CW.esc("" + e) + '</div>'; });
+      }).catch(function (e) { root.innerHTML = '<div class="cw-err">' + CW.esc(e.message || ("" + e)) + '</div>'; });
     }
     function kick() { if (stop) stop(); stop = CW.poll(tick, (cfg.interval || 30) * 1000); }
     CW.attachGear(el.closest(".card"), function () {

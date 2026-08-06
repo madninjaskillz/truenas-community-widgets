@@ -1,14 +1,14 @@
 {
   "id": "network-interfaces",
   "name": "Network Interfaces",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "CW",
-  "description": "Lists TrueNAS network interfaces with link state and negotiated link speed (not current throughput). Needs your TrueNAS URL + an API key.",
+  "description": "Lists TrueNAS network interfaces with link state and negotiated link speed (not current throughput). Needs your TrueNAS URL + an API key (Settings → API Keys).",
   "client": "client.js",
   "supportedSizes": ["quarter", "half", "full"],
   "config": {
-    "url": { "type": "string", "label": "TrueNAS URL", "default": "" },
-    "apikey": { "type": "string", "label": "API key", "default": "" },
+    "url": { "type": "string", "label": "TrueNAS URL (e.g. https://192.168.1.50)", "default": "" },
+    "apikey": { "type": "string", "label": "API key (Settings → API Keys in TrueNAS)", "default": "" },
     "interval": { "type": "number", "label": "Refresh seconds", "default": 30 }
   }
 }
