@@ -13,14 +13,47 @@ button{font:inherit;border:0;border-radius:7px;padding:7px 14px;cursor:pointer;c
 .install{background:#2563eb}.update{background:#b45309}.remove{background:transparent;color:#ff6b6b;border:1px solid rgba(255,107,107,.4)}
 button:disabled{opacity:.5;cursor:default}
 .note{color:#9aa4af;font-size:12px;margin-top:18px}.err{color:#ff8c42}
+.hub-card{display:flex;align-items:center;gap:14px;background:#1c2330;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px 16px;margin:10px 0 18px}
+.hub-card .meta{flex:1;min-width:0}.hub-card .name{font-weight:600}
+.hub-card .status{color:#9aa4af;font-size:12px;margin-top:2px}
+.hub-btn{background:#2563eb}.hub-reset{background:transparent;color:#9aa4af;border:1px solid rgba(255,255,255,.15)}
 </style></head>
 <body>
 <h1>TrueNAS Community Widgets</h1>
 <p class="sub">Install, update and remove dashboard widgets. After installing, add one from the dashboard via <b>Configure → Add → Custom</b>.</p>
+<div class="hub-card">
+  <div class="meta">
+    <div class="name">Hub frontend</div>
+    <div class="status" id="hub-status">loader.js / lib.js / store.html — click to check for updates.</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="hub-btn" id="hub-update-btn" onclick="hubUpdate()">Check for Hub Update</button>
+    <button class="hub-reset" id="hub-reset-btn" onclick="hubReset()">Reset to bundled</button>
+  </div>
+</div>
 <div id="list">Loading…</div>
 <p class="note" id="src"></p>
 <script>
 function api(action, id){ return fetch('/cw/store/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(r=>r.json()); }
+function hubUpdate(){
+  var b=document.getElementById('hub-update-btn'), s=document.getElementById('hub-status');
+  b.disabled=true; b.textContent='Checking…';
+  fetch('/cw/hubupdate',{method:'POST'}).then(r=>r.json()).then(function(r){
+    b.disabled=false; b.textContent='Check for Hub Update';
+    if(r.error){ s.className='status err'; s.textContent='Error: '+r.error; return; }
+    var errs=Object.keys(r.errors||{}), parts=[];
+    if(r.changed && r.changed.length) parts.push('Updated: '+r.changed.join(', ')+' — reload the page to use them.');
+    else if(!errs.length) parts.push('Already up to date.');
+    if(errs.length) parts.push('Failed to fetch: '+errs.join(', ')+'.');
+    s.className='status'+(errs.length?' err':''); s.textContent=parts.join(' ');
+  }).catch(function(e){ b.disabled=false; b.textContent='Check for Hub Update'; document.getElementById('hub-status').textContent='Error: '+e; });
+}
+function hubReset(){
+  var s=document.getElementById('hub-status');
+  fetch('/cw/hubreset',{method:'POST'}).then(r=>r.json()).then(function(r){
+    s.textContent=(r.removed&&r.removed.length)?('Reverted to bundled: '+r.removed.join(', ')+' — reload the page.'):'Already on the bundled version.';
+  }).catch(function(e){ s.textContent='Error: '+e; });
+}
 function esc(s){ return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 function render(cat){
   var list=document.getElementById('list');

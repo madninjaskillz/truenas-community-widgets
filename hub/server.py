@@ -12,6 +12,9 @@ Serves everything under /cw/* (the host nginx proxy_passes /cw/ here):
   POST /cw/store/install|update|remove   {"id": "..."}  lifecycle
   GET  /cw/devcatalog/<path>    bundled dev catalog (zips + catalog.json)
   GET  /cw/ /cw/store           store UI
+  POST /cw/hubupdate            fetch loader.js/lib.js/store.html from CW_HUB_SOURCE_URL,
+                                 stage any that changed (live immediately, no restart)
+  POST /cw/hubreset             drop staged files, revert to what shipped in the image
 
 Widget catalog: CW_CATALOG_URL (file path or http[s] URL to a catalog.json). Default
 is a self-generated dev catalog under $CW_DATA/devcatalog built from /app/builtin/*.
@@ -31,6 +34,10 @@ DATA_DIR   = os.environ.get("CW_DATA", "/data")
 WIDGETS    = os.path.join(DATA_DIR, "widgets")
 CONFIGS    = os.path.join(DATA_DIR, "config")
 DEVCAT     = os.path.join(DATA_DIR, "devcatalog")
+CLIENT_OVERRIDE_DIR = os.path.join(DATA_DIR, "client_override")
+HUB_UPDATE_FILES = ["loader.js", "lib.js", "store.html"]
+HUB_SOURCE_URL = os.environ.get("CW_HUB_SOURCE_URL",
+    "https://raw.githubusercontent.com/madninjaskillz/truenas-community-widgets/main/hub/client")
 PORT       = int(os.environ.get("CW_PORT", "8080"))
 SEED       = ["gpu-monitor"]                         # pre-installed on first run
 CATALOG_URL = os.environ.get("CW_CATALOG_URL", os.path.join(DEVCAT, "catalog.json"))
@@ -47,7 +54,40 @@ SAFE = re.compile(r"^[A-Za-z0-9._-]+$")
 
 def mime_for(p): return MIME.get(os.path.splitext(p)[1].lower(), "application/octet-stream")
 def ensure_dirs():
-    for d in (WIDGETS, CONFIGS, DEVCAT): os.makedirs(d, exist_ok=True)
+    for d in (WIDGETS, CONFIGS, DEVCAT, CLIENT_OVERRIDE_DIR): os.makedirs(d, exist_ok=True)
+
+# ---------------- Hub self-update (loader.js/lib.js/store.html only) ----------------
+# The backend (server.py, Dockerfile) still needs a real image rebuild; this just lets the
+# fast-moving frontend files update without one. Staged files live on the data volume and
+# take effect immediately (no restart) since _file() always serves Cache-Control: no-store.
+def client_file_path(name):
+    override = os.path.join(CLIENT_OVERRIDE_DIR, name)
+    return override if os.path.isfile(override) else os.path.join(CLIENT_DIR, name)
+
+def hub_check_update():
+    os.makedirs(CLIENT_OVERRIDE_DIR, exist_ok=True)
+    changed, errors = [], {}
+    for name in HUB_UPDATE_FILES:
+        try:
+            data = _read(HUB_SOURCE_URL.rstrip("/") + "/" + name)
+        except Exception as e:
+            errors[name] = str(e)[:200]; continue
+        cur_path = client_file_path(name)
+        cur = open(cur_path, "rb").read() if os.path.isfile(cur_path) else b""
+        if data != cur:
+            tmp = os.path.join(CLIENT_OVERRIDE_DIR, name + ".tmp")
+            with open(tmp, "wb") as f: f.write(data)
+            os.replace(tmp, os.path.join(CLIENT_OVERRIDE_DIR, name))
+            changed.append(name)
+    return {"changed": changed, "errors": errors}
+
+def hub_reset():
+    removed = []
+    for name in HUB_UPDATE_FILES:
+        p = os.path.join(CLIENT_OVERRIDE_DIR, name)
+        if os.path.isfile(p): os.remove(p); removed.append(name)
+    return {"removed": removed}
+
 def load_meta_dir(d):
     try:
         with open(os.path.join(d, "metadata.json")) as f: return json.load(f)
@@ -338,7 +378,7 @@ class H(BaseHTTPRequestHandler):
     def do_GET(self):
         parts = self._parts()
         if parts is None: return self._json(404, {"error": "not cw"})
-        if not parts or parts[0] in ("store", "index.html"): return self._file(os.path.join(CLIENT_DIR, "store.html"))
+        if not parts or parts[0] in ("store", "index.html"): return self._file(client_file_path("store.html"))
         head = parts[0]
         if head == "manifest.json": return self._json(200, build_manifest())
         if head == "catalog": return self._json(200, discover())
@@ -351,8 +391,8 @@ class H(BaseHTTPRequestHandler):
         if head == "stream":
             q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             return self._stream((q.get("url") or [""])[0], (q.get("auth") or [None])[0])
-        if head == "loader.js": return self._file(os.path.join(CLIENT_DIR, "loader.js"))
-        if head == "lib.js": return self._file(os.path.join(CLIENT_DIR, "lib.js"))
+        if head == "loader.js": return self._file(client_file_path("loader.js"))
+        if head == "lib.js": return self._file(client_file_path("lib.js"))
         if head == "patch" and parts[1:] == ["patch.sh"]: return self._file(os.path.join(PATCH_DIR, "patch.sh"))
         if head == "devcatalog" and len(parts) >= 2:
             fp = self._safe_join(DEVCAT, parts[1:]); return self._file(fp) if fp else self._json(400, {"error": "bad path"})
@@ -385,6 +425,11 @@ class H(BaseHTTPRequestHandler):
         parts = self._parts()
         if parts and parts[0] == "fetch":
             return self._json(200, proxy_fetch(self._body() or {}))
+        if parts == ["hubupdate"]:
+            try: return self._json(200, hub_check_update())
+            except Exception as e: return self._json(500, {"error": str(e)[:200]})
+        if parts == ["hubreset"]:
+            return self._json(200, hub_reset())
         if parts and parts[0] == "store" and len(parts) == 2 and parts[1] in ("install", "update", "remove"):
             obj = self._body() or {}
             wid = obj.get("id", "")

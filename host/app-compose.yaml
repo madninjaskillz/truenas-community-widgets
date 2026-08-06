@@ -4,13 +4,19 @@
 # nginx route; the Hub port stays loopback-only, never LAN-exposed).
 #
 # Security knobs (env):
-#   CW_FETCH_MODE   open (default) | off | allowlist   — controls the /cw/fetch proxy
-#   CW_FETCH_ALLOW  comma-separated host substrings (when CW_FETCH_MODE=allowlist)
-#   CW_CATALOG_URL  the widget catalog to use (raw catalog.json)
+#   CW_FETCH_MODE     open (default) | off | allowlist   — controls the /cw/fetch proxy
+#   CW_FETCH_ALLOW    comma-separated host substrings (when CW_FETCH_MODE=allowlist)
+#   CW_CATALOG_URL    the widget catalog to use (raw catalog.json)
+#   CW_HUB_SOURCE_URL base URL the "Check for Hub Update" button fetches
+#                      loader.js/lib.js/store.html from (default: this repo's hub/client on main)
 services:
   cw-hub:
-    # install.sh builds this locally from ./hub (no registry needed). If you prefer the
-    # published image, set: image: ghcr.io/madninjaskillz/cw-hub:latest + pull_policy: always
+    # install.sh builds this locally from ./hub (no registry needed -- GitHub Actions
+    # runner availability isn't reliable enough to depend on for the published image).
+    # For loader.js/lib.js/store.html specifically, use the in-UI "Check for Hub Update"
+    # button instead (Widget Store page) -- it self-updates those without a rebuild.
+    # If you prefer the published image: image: ghcr.io/madninjaskillz/cw-hub:latest +
+    # pull_policy: always.
     image: cw-hub:local
     pull_policy: never
     restart: unless-stopped

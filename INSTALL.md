@@ -7,7 +7,8 @@
 - **TrueNAS SCALE 25.10.x** (built and tested on 25.10.4; other versions may not work —
   the WebUI injection is version-specific).
 - Apps (Docker) enabled, with internet access (to pull the `python:3.12-slim` base image
-  when building the Hub, and to reach `raw.githubusercontent.com` for the catalog).
+  when building the Hub, and to reach `raw.githubusercontent.com` for the catalog and
+  in-UI Hub updates).
 - Root/SSH access to the box.
 
 ## Install
@@ -22,7 +23,8 @@
    ```
    It builds the Hub image locally from `hub/`, creates the **cw-hub** app, installs the
    WebUI nginx shim, and registers the store's Web UI button. (A prebuilt image is also
-   published at `ghcr.io/madninjaskillz/cw-hub` if you'd rather pull than build.)
+   published at `ghcr.io/madninjaskillz/cw-hub` if you'd rather pull than build — see the
+   comment in `host/app-compose.yaml`.)
 3. **Hard-refresh** the WebUI (Ctrl-F5).
 
 ## Using it
@@ -40,7 +42,14 @@ Edit the `cw-hub` app (or `host/app-compose.yaml`) env:
 
 ## Update
 - **Widgets** update from the store (Discover → Update).
-- **The Hub**: `git pull` then `sudo sh host/install.sh` again (re-pulls the image).
+- **The Hub's frontend** (`loader.js`/`lib.js`/`store.html`): click **Check for Hub
+  Update** on the Widget Store page. It fetches those three files from `CW_HUB_SOURCE_URL`
+  (default: this repo's `main`), stages any that changed on the Hub's data volume, and
+  serves them immediately — no rebuild, no restart, just reload the page. Use **Reset to
+  bundled** on the same page to drop the staged copies and go back to what shipped in the
+  image.
+- **The Hub's backend** (`hub/server.py`, `Dockerfile`, anything the button above can't
+  reach): `git pull` then `sudo sh host/install.sh` again (rebuilds and redeploys).
 - After a **TrueNAS OS upgrade**, re-run `sudo sh host/install.sh` (an OS upgrade wipes
   `/etc` customizations).
 
