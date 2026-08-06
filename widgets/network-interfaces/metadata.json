@@ -1,7 +1,7 @@
 {
   "id": "network-interfaces",
   "name": "Network Interfaces",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "CW",
   "description": "Lists TrueNAS network interfaces with link state and negotiated link speed (not current throughput). Needs your TrueNAS URL + an API key (Settings → API Keys).",
   "client": "client.js",

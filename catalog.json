@@ -247,7 +247,7 @@
     {
       "id": "network-interfaces",
       "name": "Network Interfaces",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "description": "Lists TrueNAS network interfaces with link state and negotiated link speed (not current throughput). Needs your TrueNAS URL + an API key (Settings \u2192 API Keys).",
       "author": "CW",
       "supportedSizes": [
@@ -256,8 +256,8 @@
         "full"
       ],
       "permissions": [],
-      "zip": "widgets/network-interfaces/network-interfaces-1.1.0.zip",
-      "sha256": "620a3557b5d6bc679a8689c929e2ce746ec2aa79cfdd9c3c419c6a4e6ba90cd2"
+      "zip": "widgets/network-interfaces/network-interfaces-1.2.0.zip",
+      "sha256": "44f2a8d4283d508ed5593d13b8039d61a3184c419f3517a53c2b61d9fa36281e"
     },
     {
       "id": "pihole",

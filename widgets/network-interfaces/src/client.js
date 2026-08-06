@@ -38,8 +38,17 @@
       }).catch(function (e) { root.innerHTML = '<div class="cw-err">' + CW.esc(e.message || ("" + e)) + '</div>'; });
     }
     function kick() { if (stop) stop(); stop = CW.poll(tick, (cfg.interval || 30) * 1000); }
+    var saveTimer = null;
     CW.attachGear(el.closest(".card"), function () {
-      CW.openModal("Network Interfaces", function (b) { CW.fields.render(b, schema, cfg, function (v) { cfg = v; ctx.saveConfig(v); kick(); }, { widgetId: ctx.widgetId }); });
+      CW.openModal("Network Interfaces", function (b) {
+        CW.fields.render(b, schema, cfg, function (v) {
+          // debounced: saving on every keystroke sends overlapping requests that can land
+          // out of order and leave the server with a stale, mid-typing partial value
+          cfg = v; kick();
+          if (saveTimer) clearTimeout(saveTimer);
+          saveTimer = setTimeout(function () { ctx.saveConfig(cfg); }, 600);
+        }, { widgetId: ctx.widgetId });
+      });
     });
     ctx.getConfig().then(function (s) { cfg = CW.fields.merge(schema, s); kick(); });
     kick();
