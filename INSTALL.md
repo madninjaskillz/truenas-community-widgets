@@ -67,3 +67,7 @@ sudo sh host/uninstall.sh --purge   # also delete the data volume
 - **Service-integration widget shows "configure me" or an error:** set its URL/API key in
   the gear; remember **host services need the box's LAN IP, not 127.0.0.1** (the proxy
   runs in the container).
+- **Network Interfaces widget shows nothing:** it reads the host's real NICs via a
+  read-only `/sys/class/net` mount declared in `host/app-compose.yaml` — if you installed
+  before this was added, re-run `sudo sh host/install.sh` (or redeploy the app) to pick up
+  the new mount.

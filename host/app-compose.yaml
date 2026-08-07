@@ -24,6 +24,10 @@ services:
       - "127.0.0.1:35200:8080"
     volumes:
       - cw-hub-data:/data
+      # Read-only host sysfs so producers (e.g. network-interfaces) can read real NIC
+      # state -- the container isn't on host networking, so its own /sys/class/net
+      # would otherwise only show container-internal virtual interfaces.
+      - /sys/class/net:/host-sys-class-net:ro
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=utility

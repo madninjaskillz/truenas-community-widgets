@@ -247,17 +247,19 @@
     {
       "id": "network-interfaces",
       "name": "Network Interfaces",
-      "version": "1.2.0",
-      "description": "Lists TrueNAS network interfaces with link state and negotiated link speed (not current throughput). Needs your TrueNAS URL + an API key (Settings \u2192 API Keys).",
+      "version": "2.0.0",
+      "description": "Host network interfaces: link state and negotiated link speed (not current throughput). Reads directly from the host over sysfs -- no configuration needed. Requires the /sys/class/net read-only mount in app-compose.yaml.",
       "author": "CW",
       "supportedSizes": [
         "quarter",
         "half",
         "full"
       ],
-      "permissions": [],
-      "zip": "widgets/network-interfaces/network-interfaces-1.2.0.zip",
-      "sha256": "44f2a8d4283d508ed5593d13b8039d61a3184c419f3517a53c2b61d9fa36281e"
+      "permissions": [
+        "net-sysfs"
+      ],
+      "zip": "widgets/network-interfaces/network-interfaces-2.0.0.zip",
+      "sha256": "d7f304cbe7281b7ff5d2abe2c46ece89f02038fa5aa61e299b480bd274e058ca"
     },
     {
       "id": "pihole",

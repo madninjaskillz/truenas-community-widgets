@@ -1,14 +1,11 @@
 {
   "id": "network-interfaces",
   "name": "Network Interfaces",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "author": "CW",
-  "description": "Lists TrueNAS network interfaces with link state and negotiated link speed (not current throughput). Needs your TrueNAS URL + an API key (Settings → API Keys).",
+  "description": "Host network interfaces: link state and negotiated link speed (not current throughput). Reads directly from the host over sysfs -- no configuration needed. Requires the /sys/class/net read-only mount in app-compose.yaml.",
   "client": "client.js",
   "supportedSizes": ["quarter", "half", "full"],
-  "config": {
-    "url": { "type": "string", "label": "TrueNAS URL (e.g. https://192.168.1.50)", "default": "" },
-    "apikey": { "type": "string", "label": "API key (Settings → API Keys in TrueNAS)", "default": "" },
-    "interval": { "type": "number", "label": "Refresh seconds", "default": 30 }
-  }
+  "producer": { "cmd": ["python3", "producer.py"], "interval": 10, "outputs": ["stats.json"] },
+  "permissions": ["net-sysfs"]
 }
