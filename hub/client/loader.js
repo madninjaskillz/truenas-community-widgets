@@ -194,8 +194,16 @@
   // away via any real sidebar link removes it too (detected via the URL change). Falls back
   // to a full-screen iframe overlay if that <main> container isn't found (older/newer WebUI).
   var storePanel = null, storePanelBody = null, storePanelPath = null;
+  function setNavActive(active) {
+    var item = document.querySelector("#cw-nav-item mat-list-item");
+    if (item) item.classList.toggle("highlighted", active);
+  }
+  function closeStorePanel() {
+    if (storePanel && storePanel.parentNode) storePanel.remove();
+    setNavActive(false);
+  }
   function openStorePanel() {
-    if (storePanel && storePanel.parentNode) { storePanel.remove(); return; }   // toggle off
+    if (storePanel && storePanel.parentNode) { closeStorePanel(); return; }   // toggle off
     var main = document.querySelector("main.rightside-content-hold");
     if (!main) return openStoreOverlay();
     if (getComputedStyle(main).position === "static") main.style.position = "relative";
@@ -207,10 +215,14 @@
     }
     main.appendChild(storePanel);
     storePanelPath = location.pathname;
+    setNavActive(true);
     ready(function () { CW.renderStore(storePanelBody); });
   }
+  // URL-change is only a fallback signal -- clicking a real nav link to the route you're
+  // ALREADY on (e.g. Dashboard, while sitting on Dashboard) is a no-op for Angular's router,
+  // so the URL never changes. mountSidebarNavItem() also closes on the click itself.
   function closeStorePanelIfNavigatedAway() {
-    if (storePanel && storePanel.parentNode && location.pathname !== storePanelPath) storePanel.remove();
+    if (storePanel && storePanel.parentNode && location.pathname !== storePanelPath) closeStorePanel();
   }
 
   // Fallback only: a full-screen cover needs its own close button, since it also hides
@@ -233,12 +245,30 @@
   }
   function closeStoreOverlay() { if (storeOverlay) storeOverlay.classList.remove("open"); }
 
+  // Material "apps" glyph (real path, verified against TrueNAS's own rendered markup) --
+  // swapped into the *existing* <ix-icon> wrapper rather than replaced with a plain
+  // element, so it keeps TrueNAS's real icon sizing/spacing/currentColor styling instead
+  // of an emoji that's a different size, font and (colored) rendering from every other item.
+  var APPS_ICON_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fit="" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">' +
+    '<path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"></path></svg>';
+
   // A real left-sidebar entry, cloned from the "Dashboard" nav item so it inherits the
   // exact same layout/hover/collapsed-sidenav behavior instead of us reimplementing it.
   function mountSidebarNavItem() {
-    if (document.getElementById("cw-nav-item")) return;
     var list = document.querySelector("ix-navigation mat-nav-list");
-    var firstWrap = list && list.children[0];
+    if (!list) return;
+    // Close on any REAL nav link click, even one that doesn't change the URL (e.g.
+    // clicking Dashboard while already on Dashboard is a no-op for Angular's router, so
+    // there's no URL change for closeStorePanelIfNavigatedAway() to detect).
+    if (!list.__cwBound) {
+      list.__cwBound = true;
+      list.addEventListener("click", function (e) {
+        var a = e.target.closest && e.target.closest("a[href]");
+        if (a) closeStorePanel();
+      }, true);
+    }
+    if (document.getElementById("cw-nav-item")) return;
+    var firstWrap = list.children[0];
     if (!firstWrap || firstWrap.tagName !== "DIV") return;
     var wrap = firstWrap.cloneNode(true);
     wrap.id = "cw-nav-item";
@@ -248,11 +278,10 @@
     if (!a) return;
     a.removeAttribute("href"); a.removeAttribute("routerlinkactive"); a.removeAttribute("name");
     a.setAttribute("data-test", "link-widgets-menu");
-    var label = a.querySelector("span");   // grab the label before the icon swap adds a 2nd span
+    var label = a.querySelector("span");
     if (label) label.textContent = "Widgets";
     var icon = a.querySelector("ix-icon");
-    var glyph = CW.h("span", { style: "display:inline-block;width:24px;text-align:center;font-size:16px" }, ["🧩"]);
-    if (icon) icon.replaceWith(glyph);
+    if (icon) { icon.innerHTML = APPS_ICON_SVG; icon.setAttribute("data-mat-icon-name", "apps"); }
     a.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openStorePanel(); }, true);
     list.appendChild(wrap);
   }
