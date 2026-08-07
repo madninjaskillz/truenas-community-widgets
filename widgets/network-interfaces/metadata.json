@@ -1,9 +1,9 @@
 {
   "id": "network-interfaces",
   "name": "Network Interfaces",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": "CW",
-  "description": "Host network interfaces: link state and negotiated link speed (not current throughput). Reads directly from the host over sysfs -- no configuration needed. Requires the /sys/class/net read-only mount in app-compose.yaml.",
+  "description": "Physical network interfaces and bonds: link state and negotiated link speed (not current throughput). Reads directly from the host over sysfs -- no configuration needed. Requires the /sys read-only mount in app-compose.yaml.",
   "client": "client.js",
   "supportedSizes": ["quarter", "half", "full"],
   "producer": { "cmd": ["python3", "producer.py"], "interval": 10, "outputs": ["stats.json"] },

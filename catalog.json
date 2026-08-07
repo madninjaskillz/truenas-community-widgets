@@ -247,8 +247,8 @@
     {
       "id": "network-interfaces",
       "name": "Network Interfaces",
-      "version": "2.0.0",
-      "description": "Host network interfaces: link state and negotiated link speed (not current throughput). Reads directly from the host over sysfs -- no configuration needed. Requires the /sys/class/net read-only mount in app-compose.yaml.",
+      "version": "2.0.1",
+      "description": "Physical network interfaces and bonds: link state and negotiated link speed (not current throughput). Reads directly from the host over sysfs -- no configuration needed. Requires the /sys read-only mount in app-compose.yaml.",
       "author": "CW",
       "supportedSizes": [
         "quarter",
@@ -258,8 +258,8 @@
       "permissions": [
         "net-sysfs"
       ],
-      "zip": "widgets/network-interfaces/network-interfaces-2.0.0.zip",
-      "sha256": "d7f304cbe7281b7ff5d2abe2c46ece89f02038fa5aa61e299b480bd274e058ca"
+      "zip": "widgets/network-interfaces/network-interfaces-2.0.1.zip",
+      "sha256": "6504867f0bbf001929ab79d572974fe5fae301b318f585009c567e8533477ba5"
     },
     {
       "id": "pihole",

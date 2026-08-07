@@ -2,18 +2,19 @@
 """network-interfaces producer.
 
 Reads real host NIC state (link state + negotiated speed) from sysfs. The Hub
-container isn't on host networking, so its own /sys/class/net only shows the
-container's virtual interfaces -- app-compose.yaml bind-mounts the host's
-/sys/class/net read-only at /host-sys-class-net so this sees the real NICs
-instead. Falls back to the container's own /sys/class/net (for local testing)
-if that mount isn't present. Writes $CW_OUT/stats.json.
+container isn't on host networking, so its own /sys only shows the container's
+virtual interfaces -- app-compose.yaml bind-mounts the host's whole /sys
+read-only at /host-sys (not just /sys/class/net: those entries are symlinks
+into /sys/devices/... which need to resolve too). Falls back to the
+container's own /sys/class/net (for local testing) if that mount isn't
+present. Writes $CW_OUT/stats.json.
 """
 import json, os, tempfile, time
 
 OUT_DIR  = os.environ.get("CW_OUT", "/tmp")
 OUT      = os.path.join(OUT_DIR, "stats.json")
 INTERVAL = int(os.environ.get("CW_INTERVAL", "10"))
-NET_DIR  = "/host-sys-class-net" if os.path.isdir("/host-sys-class-net") else "/sys/class/net"
+NET_DIR  = "/host-sys/class/net" if os.path.isdir("/host-sys/class/net") else "/sys/class/net"
 
 def read(path):
     try:
@@ -28,8 +29,11 @@ def sample():
     for name in names:
         if name == "lo": continue
         base = os.path.join(NET_DIR, name)
-        state = read(os.path.join(base, "operstate")) or "unknown"
+        if not os.path.isdir(base): continue   # e.g. bonding_masters -- a control file, not an interface
         physical = os.path.exists(os.path.join(base, "device"))
+        is_bond = os.path.isdir(os.path.join(base, "bonding"))
+        if not (physical or is_bond): continue  # skip docker/VM plumbing: bridges, veths, macvlan/macvtap
+        state = read(os.path.join(base, "operstate")) or "unknown"
         speed = None
         if state == "up":
             raw = read(os.path.join(base, "speed"))
