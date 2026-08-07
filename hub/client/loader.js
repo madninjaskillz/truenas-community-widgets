@@ -188,6 +188,49 @@
     if (widId) reconfigure(form, widId);
   }
 
+  // ---- Store overlay: full-screen, same tab, instead of a separate browser tab ----
+  var storeOverlay = null, storeFrame = null;
+  function openStoreOverlay() {
+    if (!storeOverlay) {
+      storeFrame = CW.h("iframe", { "class": "cw-store-frame", src: "/cw/store", title: "Widget Store" });
+      var closeBtn = CW.h("button", { "class": "cw-store-close", title: "Close", "aria-label": "Close", html: "&times;" });
+      closeBtn.addEventListener("click", closeStoreOverlay);
+      storeOverlay = CW.h("div", { "class": "cw-store-overlay" }, [closeBtn, storeFrame]);
+      document.body.appendChild(storeOverlay);
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && storeOverlay.classList.contains("open")) closeStoreOverlay();
+      });
+    } else {
+      storeFrame.src = "/cw/store";   // refresh (e.g. reflect a widget just installed elsewhere)
+    }
+    storeOverlay.classList.add("open");
+  }
+  function closeStoreOverlay() { if (storeOverlay) storeOverlay.classList.remove("open"); }
+
+  // A real left-sidebar entry, cloned from the "Dashboard" nav item so it inherits the
+  // exact same layout/hover/collapsed-sidenav behavior instead of us reimplementing it.
+  function mountSidebarNavItem() {
+    if (document.getElementById("cw-nav-item")) return;
+    var list = document.querySelector("ix-navigation mat-nav-list");
+    var firstWrap = list && list.children[0];
+    if (!firstWrap || firstWrap.tagName !== "DIV") return;
+    var wrap = firstWrap.cloneNode(true);
+    wrap.id = "cw-nav-item";
+    var item = wrap.querySelector("mat-list-item");
+    if (item) { item.removeAttribute("id"); item.classList.remove("highlighted"); }
+    var a = wrap.querySelector("a");
+    if (!a) return;
+    a.removeAttribute("href"); a.removeAttribute("routerlinkactive"); a.removeAttribute("name");
+    a.setAttribute("data-test", "link-widgets-menu");
+    var label = a.querySelector("span");   // grab the label before the icon swap adds a 2nd span
+    if (label) label.textContent = "Widgets";
+    var icon = a.querySelector("ix-icon");
+    var glyph = CW.h("span", { style: "display:inline-block;width:24px;text-align:center;font-size:16px" }, ["🧩"]);
+    if (icon) icon.replaceWith(glyph);
+    a.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openStoreOverlay(); }, true);
+    list.appendChild(wrap);
+  }
+
   // Preferred: a real topbar icon button cloned from "Send Feedback" (same classes/ripple
   // shell, so it matches TrueNAS's own styling instead of us reimplementing it). Falls back
   // to the floating pill button if the topbar markup doesn't match (older/newer WebUI).
@@ -210,7 +253,7 @@
     if (icon) icon.replaceWith(glyph); else btn.appendChild(glyph);
     btn.addEventListener("click", function (e) {
       e.preventDefault(); e.stopPropagation();
-      window.open("/cw/store", "_blank", "noopener");
+      openStoreOverlay();
     });
     anchor.parentNode.insertBefore(wrap, anchor);
     return true;
@@ -225,14 +268,16 @@
     if (document.getElementById("cw-store-btn-topbar")) return;
     try { if (mountTopbarStoreButton()) { var f2 = document.getElementById("cw-store-btn-float"); if (f2) f2.remove(); return; } } catch (e) {}
     if (!document.getElementById("cw-store-btn-float")) {
-      var btn = CW.h("a", { id: "cw-store-btn-float", "class": "cw-store-btn", href: "/cw/store", target: "_blank", rel: "noopener",
+      var btn = CW.h("a", { id: "cw-store-btn-float", "class": "cw-store-btn", href: "/cw/store",
         title: "Browse and install dashboard widgets", html: "&#129513; Widget Store" });
+      btn.addEventListener("click", function (e) { e.preventDefault(); openStoreOverlay(); });
       document.body.appendChild(btn);
     }
   }
 
   function scan() {
     ensureStoreButton();
+    try { mountSidebarNavItem(); } catch (e) {}
     checkPanels();
     getManifest().then(function (m) {
       fixCounts(((m && m.widgets) || []).length);
@@ -258,7 +303,12 @@
         ".cw-pick-hint{font-size:11px;color:var(--fg2,#9aa4af);margin-top:4px}" +
         ".cw-ro{margin:0 0 12px}.cw-ro-name{font-weight:600;color:var(--fg1,#e6edf3)}" +
         ".cw-store-btn{position:fixed;bottom:18px;right:18px;z-index:99998;background:var(--primary,#4aa8ff);color:#fff;padding:10px 16px;border-radius:24px;font:600 13px Roboto,Arial,sans-serif;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.4);display:flex;align-items:center;gap:6px}" +
-        ".cw-store-btn:hover{filter:brightness(1.1)}");
+        ".cw-store-btn:hover{filter:brightness(1.1)}" +
+        ".cw-store-overlay{position:fixed;inset:0;z-index:999999;background:var(--bg1,#11161e);display:none}" +
+        ".cw-store-overlay.open{display:block}" +
+        ".cw-store-frame{position:absolute;inset:0;width:100%;height:100%;border:0}" +
+        ".cw-store-close{position:absolute;top:8px;right:14px;z-index:1;background:transparent;border:0;color:var(--fg1,#e6edf3);font-size:30px;line-height:1;cursor:pointer;opacity:.6;padding:4px 8px}" +
+        ".cw-store-close:hover{opacity:1}");
       try { new MutationObserver(function () { scan(); }).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
       scan();
     });

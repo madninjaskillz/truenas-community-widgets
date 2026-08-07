@@ -1,10 +1,19 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Widget Hub</title>
+<script>
+// Match the current TrueNAS theme (same origin -> same localStorage) instead of a fixed
+// dark palette, using the same two keys TrueNAS's own index.html reads on load.
+(function () {
+  var bg1 = localStorage.getItem("bg1"), fg1 = localStorage.getItem("fg1");
+  document.documentElement.style.setProperty("--cw-bg1", bg1 || "#11161e");
+  document.documentElement.style.setProperty("--cw-fg1", fg1 || "#e6edf3");
+})();
+</script>
 <style>
 :root{color-scheme:dark}
-body{font:14px/1.5 Roboto,Arial,sans-serif;background:#11161e;color:#e6edf3;margin:0;padding:24px;max-width:820px}
-h1{font-size:20px;margin:0 0 4px}.sub{color:#9aa4af;margin:0 0 20px;font-size:13px}
+body{font:14px/1.5 "IBM Plex Sans",Roboto,Arial,sans-serif;background:var(--cw-bg1,#11161e);color:var(--cw-fg1,#e6edf3);margin:0 auto;padding:24px;max-width:820px}
+h1{font-family:"Titillium Web",Roboto,Arial,sans-serif;font-size:20px;margin:0 0 4px}.sub{color:#9aa4af;margin:0 0 20px;font-size:13px}
 .card{display:flex;align-items:center;gap:14px;background:#1c2330;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px 16px;margin:10px 0}
 .card .meta{flex:1;min-width:0}.card .name{font-weight:600}.card .ver{color:#9aa4af;font-size:12px;margin-left:6px}
 .card .desc{color:#9aa4af;font-size:12px;margin-top:2px}
