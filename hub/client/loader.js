@@ -188,7 +188,33 @@
     if (widId) reconfigure(form, widId);
   }
 
-  // ---- Store overlay: full-screen, same tab, instead of a separate browser tab ----
+  // ---- Store panel: replaces the routed page content inside <main>, so the topbar and
+  // sidebar stay visible and usable (rather than a separate tab, or a full-screen cover).
+  // No close button by design -- clicking the trigger again toggles it off, and navigating
+  // away via any real sidebar link removes it too (detected via the URL change). Falls back
+  // to a full-screen iframe overlay if that <main> container isn't found (older/newer WebUI).
+  var storePanel = null, storePanelBody = null, storePanelPath = null;
+  function openStorePanel() {
+    if (storePanel && storePanel.parentNode) { storePanel.remove(); return; }   // toggle off
+    var main = document.querySelector("main.rightside-content-hold");
+    if (!main) return openStoreOverlay();
+    if (getComputedStyle(main).position === "static") main.style.position = "relative";
+    if (!storePanel) {
+      storePanelBody = CW.h("div", { "class": "cw-store-panel-body" });
+      storePanel = CW.h("div", { "class": "cw-store-panel" }, [
+        CW.h("h1", { "class": "cw-store-title", text: "Widget Store" }), storePanelBody
+      ]);
+    }
+    main.appendChild(storePanel);
+    storePanelPath = location.pathname;
+    ready(function () { CW.renderStore(storePanelBody); });
+  }
+  function closeStorePanelIfNavigatedAway() {
+    if (storePanel && storePanel.parentNode && location.pathname !== storePanelPath) storePanel.remove();
+  }
+
+  // Fallback only: a full-screen cover needs its own close button, since it also hides
+  // the sidebar that would otherwise be the way back.
   var storeOverlay = null, storeFrame = null;
   function openStoreOverlay() {
     if (!storeOverlay) {
@@ -227,7 +253,7 @@
     var icon = a.querySelector("ix-icon");
     var glyph = CW.h("span", { style: "display:inline-block;width:24px;text-align:center;font-size:16px" }, ["🧩"]);
     if (icon) icon.replaceWith(glyph);
-    a.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openStoreOverlay(); }, true);
+    a.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openStorePanel(); }, true);
     list.appendChild(wrap);
   }
 
@@ -253,7 +279,7 @@
     if (icon) icon.replaceWith(glyph); else btn.appendChild(glyph);
     btn.addEventListener("click", function (e) {
       e.preventDefault(); e.stopPropagation();
-      openStoreOverlay();
+      openStorePanel();
     });
     anchor.parentNode.insertBefore(wrap, anchor);
     return true;
@@ -270,14 +296,14 @@
     if (!document.getElementById("cw-store-btn-float")) {
       var btn = CW.h("a", { id: "cw-store-btn-float", "class": "cw-store-btn", href: "/cw/store",
         title: "Browse and install dashboard widgets", html: "&#129513; Widget Store" });
-      btn.addEventListener("click", function (e) { e.preventDefault(); openStoreOverlay(); });
+      btn.addEventListener("click", function (e) { e.preventDefault(); openStorePanel(); });
       document.body.appendChild(btn);
     }
   }
 
   function scan() {
     ensureStoreButton();
-    try { mountSidebarNavItem(); } catch (e) {}
+    try { mountSidebarNavItem(); closeStorePanelIfNavigatedAway(); } catch (e) {}
     checkPanels();
     getManifest().then(function (m) {
       fixCounts(((m && m.widgets) || []).length);
@@ -304,6 +330,9 @@
         ".cw-ro{margin:0 0 12px}.cw-ro-name{font-weight:600;color:var(--fg1,#e6edf3)}" +
         ".cw-store-btn{position:fixed;bottom:18px;right:18px;z-index:99998;background:var(--primary,#4aa8ff);color:#fff;padding:10px 16px;border-radius:24px;font:600 13px Roboto,Arial,sans-serif;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.4);display:flex;align-items:center;gap:6px}" +
         ".cw-store-btn:hover{filter:brightness(1.1)}" +
+        ".cw-store-panel{position:absolute;inset:0;z-index:100;background:var(--bg1,#11161e);overflow:auto;padding:24px}" +
+        ".cw-store-title{font-family:var(--font-family-header,\"Titillium Web\",Roboto,Arial,sans-serif);font-size:20px;font-weight:600;margin:0 0 16px;color:var(--fg1,#e6edf3)}" +
+        ".cw-store-panel-body{max-width:820px}" +
         ".cw-store-overlay{position:fixed;inset:0;z-index:999999;background:var(--bg1,#11161e);display:none}" +
         ".cw-store-overlay.open{display:block}" +
         ".cw-store-frame{position:absolute;inset:0;width:100%;height:100%;border:0}" +

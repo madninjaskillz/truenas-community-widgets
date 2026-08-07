@@ -225,4 +225,90 @@
     bd.appendChild(CW.h("div", { "class": "cw-modal" }, [CW.h("div", { "class": "cw-modal-h" }, [CW.h("span", { text: title }), x]), body]));
     build(body); document.body.appendChild(bd); return bd;
   };
+
+  // ---- Widget Store rendering — shared by the standalone store.html page and the
+  // embedded dashboard panel (loader.js), so there's one implementation, not two. Uses
+  // TrueNAS's real design tokens (--bg1/--fg1/--primary/--lines/--font-family-*) so it
+  // matches whatever page it's rendered into; store.html sets fallback values itself for
+  // standalone use, where those variables aren't otherwise defined.
+  CW.style("cw-store-css",
+    ".cw-store *{box-sizing:border-box}" +
+    ".cw-store{font:14px/1.5 var(--font-family-body,\"IBM Plex Sans\",Roboto,Arial,sans-serif);color:var(--fg1,#e6edf3)}" +
+    ".cw-store .card{display:flex;align-items:center;gap:14px;background:var(--bg2,#1c2330);border:1px solid var(--lines,rgba(255,255,255,.08));border-radius:10px;padding:14px 16px;margin:10px 0}" +
+    ".cw-store .card .meta{flex:1;min-width:0}.cw-store .card .name{font-weight:600}.cw-store .card .ver{color:var(--fg2,#9aa4af);font-size:12px;margin-left:6px}" +
+    ".cw-store .card .desc{color:var(--fg2,#9aa4af);font-size:12px;margin-top:2px}" +
+    ".cw-store .tag{display:inline-block;font-size:10px;color:var(--fg2,#9aa4af);border:1px solid var(--lines,rgba(255,255,255,.15));border-radius:4px;padding:0 5px;margin-left:6px}" +
+    ".cw-store button{font:inherit;border:0;border-radius:7px;padding:7px 14px;cursor:pointer;color:#fff}" +
+    ".cw-store .install{background:var(--primary,#2563eb)}.cw-store .update{background:#b45309}" +
+    ".cw-store .remove{background:transparent;color:#ff6b6b;border:1px solid rgba(255,107,107,.4)}" +
+    ".cw-store button:disabled{opacity:.5;cursor:default}" +
+    ".cw-store .note{color:var(--fg2,#9aa4af);font-size:12px;margin-top:18px}.cw-store .err{color:#ff8c42}" +
+    ".cw-store .hub-card{margin:0 0 18px}" +
+    ".cw-store .hub-status{color:var(--fg2,#9aa4af);font-size:12px;margin-top:2px}" +
+    ".cw-store .hub-btn{background:var(--primary,#2563eb)}.cw-store .hub-reset{background:transparent;color:var(--fg2,#9aa4af);border:1px solid var(--lines,rgba(255,255,255,.15))}");
+
+  CW.renderStore = function (container) {
+    container.className = (container.className || "") + " cw-store";
+    container.innerHTML =
+      '<div class="card hub-card">' +
+        '<div class="meta"><div class="name">Hub frontend</div>' +
+        '<div class="hub-status" id="cw-hub-status">loader.js / lib.js / store.html — click to check for updates.</div></div>' +
+        '<div style="display:flex;gap:8px">' +
+          '<button class="hub-btn" id="cw-hub-update-btn">Check for Hub Update</button>' +
+          '<button class="hub-reset" id="cw-hub-reset-btn">Reset to bundled</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="cw-store-list">Loading…</div>';
+    var $ = function (sel) { return container.querySelector(sel); };
+    function api(action, id) {
+      return fetch("/cw/store/" + action, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: id }) }).then(function (r) { return r.json(); });
+    }
+    $("#cw-hub-update-btn").onclick = function () {
+      var b = $("#cw-hub-update-btn"), s = $("#cw-hub-status");
+      b.disabled = true; b.textContent = "Checking…";
+      fetch("/cw/hubupdate", { method: "POST" }).then(function (r) { return r.json(); }).then(function (r) {
+        b.disabled = false; b.textContent = "Check for Hub Update";
+        if (r.error) { s.className = "hub-status err"; s.textContent = "Error: " + r.error; return; }
+        var errs = Object.keys(r.errors || {}), parts = [];
+        if (r.changed && r.changed.length) parts.push("Updated: " + r.changed.join(", ") + " — reload the page to use them.");
+        else if (!errs.length) parts.push("Already up to date.");
+        if (errs.length) parts.push("Failed to fetch: " + errs.join(", ") + ".");
+        s.className = "hub-status" + (errs.length ? " err" : ""); s.textContent = parts.join(" ");
+      }).catch(function (e) { b.disabled = false; b.textContent = "Check for Hub Update"; $("#cw-hub-status").textContent = "Error: " + e; });
+    };
+    $("#cw-hub-reset-btn").onclick = function () {
+      var s = $("#cw-hub-status");
+      fetch("/cw/hubreset", { method: "POST" }).then(function (r) { return r.json(); }).then(function (r) {
+        s.textContent = (r.removed && r.removed.length) ? ("Reverted to bundled: " + r.removed.join(", ") + " — reload the page.") : "Already on the bundled version.";
+      }).catch(function (e) { s.textContent = "Error: " + e; });
+    };
+    function render(cat) {
+      var list = $("#cw-store-list");
+      if (cat.error) { list.innerHTML = '<p class="err">Catalog error: ' + CW.esc(cat.error) + "</p>"; }
+      var ws = cat.widgets || [];
+      if (!ws.length) { list.innerHTML = '<p class="note">No widgets in the catalog.</p>'; return; }
+      list.innerHTML = "";
+      ws.forEach(function (w) {
+        var card = CW.h("div", { "class": "card" });
+        var perms = (w.permissions || []).map(function (p) { return '<span class="tag">' + CW.esc(p) + "</span>"; }).join("");
+        card.innerHTML = '<div class="meta"><div><span class="name">' + CW.esc(w.name) + '</span><span class="ver">v' + CW.esc(w.version) + "</span>" +
+          (w.installed ? '<span class="tag">installed' + (w.installedVersion && w.installedVersion !== w.version ? " v" + CW.esc(w.installedVersion) : "") + "</span>" : "") + perms + "</div>" +
+          '<div class="desc">' + CW.esc(w.description) + "</div></div>";
+        var btns = CW.h("div");
+        function mk(label, cls, action) {
+          var b = CW.h("button", { "class": cls, text: label });
+          b.onclick = function () { b.disabled = true; b.textContent = "…"; api(action, w.id).then(function (r) { if (r.error) { alert(r.error); b.disabled = false; } load(); }); };
+          return b;
+        }
+        if (!w.installed) btns.appendChild(mk("Install", "install", "install"));
+        else { if (w.updatable) btns.appendChild(mk("Update", "update", "update")); btns.appendChild(mk("Remove", "remove", "remove")); }
+        card.appendChild(btns); list.appendChild(card);
+      });
+    }
+    function load() {
+      fetch("/cw/catalog", { cache: "no-store" }).then(function (r) { return r.json(); }).then(render)
+        .catch(function (e) { $("#cw-store-list").innerHTML = '<p class="err">' + e + "</p>"; });
+    }
+    load();
+  };
 })();
