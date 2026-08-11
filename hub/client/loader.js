@@ -346,7 +346,7 @@
 
   function start() {
     if (!document.body) return setTimeout(start, 300);
-    try { console.info("[CW] Community Widgets loader active (built for TrueNAS SCALE 25.10.x). If the widget picker/cards don't appear, your WebUI version may differ."); } catch (e) {}
+    try { console.info("[CW] Community Widgets loader active (built for TrueNAS SCALE 25.10.x–26.0). If the widget picker/cards don't appear, your WebUI version may differ."); } catch (e) {}
     ready(function () {
       CW.style("cw-host-style",
         ".cw-host .card{position:relative}" +

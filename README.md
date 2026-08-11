@@ -6,7 +6,7 @@ integrations (Pi-hole, *arr, Plex/Jellyfin, Portainer, Proxmox, …). A small Do
 
 > ⚠️ **Beta + unsupported appliance modification.** Widgets run JS in your TrueNAS admin
 > session and the install patches the WebUI nginx. **Read [SECURITY.md](SECURITY.md) and
-> [INSTALL.md](INSTALL.md) before installing.** Tested on TrueNAS SCALE **25.10.x**.
+> [INSTALL.md](INSTALL.md) before installing.** Tested on TrueNAS SCALE **25.10.x** and **26.0 (BETA)**.
 
 ## Install
 ```sh

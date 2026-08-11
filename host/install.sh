@@ -37,6 +37,14 @@ done
 [ "$st" = "RUNNING" ] || { echo "[CW] app did not reach RUNNING (state=$st). Check the Apps page."; exit 1; }
 
 echo "[CW] 4/4 applying WebUI injection + registering the Web UI portal"
+# app.update/app.create can return while the OLD container is still serving; wait
+# until the hub serves the patch.sh we just built, so the shim doesn't apply a stale one.
+WANT=$(md5sum "$SRC/../hub/patch/patch.sh" | awk '{print $1}')
+for i in $(seq 1 30); do
+  GOT=$(curl -fsS --max-time 3 http://127.0.0.1:35200/cw/patch/patch.sh 2>/dev/null | md5sum | awk '{print $1}')
+  [ "$GOT" = "$WANT" ] && break
+  sleep 2
+done
 systemctl start cw-nginx.service || true
 sleep 2
 midclt call app.metadata.generate >/dev/null 2>&1 || true

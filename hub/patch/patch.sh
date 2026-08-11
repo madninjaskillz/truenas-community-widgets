@@ -2,7 +2,9 @@
 # CW host-shim nginx patcher. Shipped by the Widget Hub container, fetched and run
 # on the HOST by cw-nginx.service whenever /etc/nginx/nginx.conf changes. Idempotent:
 # adds a same-origin /cw/ proxy to the hub (127.0.0.1:35200) and injects the loader
-# <script> into the WebUI shell. Tests config and reverts on failure.
+# <script> into the WebUI shell. Re-runs strip any previous CW lines first, so an
+# upgraded patch (e.g. new target blocks) converges instead of keeping the old shape.
+# Tests config and reverts on failure.
 python3 - <<'PY'
 import subprocess, shutil, sys
 CONF = "/etc/nginx/nginx.conf"
@@ -16,11 +18,29 @@ LOC = ("        " + MARK + " location\n"
        "            proxy_set_header X-Real-IP $remote_addr;\n"
        "            proxy_buffering off;\n"
        "        }\n\n")
-TARGETS = ["location @index {", "location = /ui/ {"]
+# Every block that can serve the WebUI shell. 25.10 uses @index and "= /ui/";
+# 26.0 adds a "= /ui/index.html" block that serves index.html directly. Only
+# blocks actually present in the conf get patched, so one list covers both.
+TARGETS = ["location @index {", "location = /ui/ {", "location = /ui/index.html {"]
 
-src = open(CONF).read()
-if MARK in src:
-    print("cw: already patched"); sys.exit(0)
+orig = open(CONF).read()
+# Strip any existing CW lines (same logic as the uninstaller) so re-running with a
+# newer patch replaces the old injection rather than exiting at "already patched".
+L = orig.splitlines(keepends=True); clean = []; i = 0; n = len(L)
+while i < n:
+    s = L[i].strip()
+    if s == MARK + " location":
+        i += 1
+        while i < n and L[i].strip() != "}": i += 1
+        i += 1
+        if i < n and L[i].strip() == "": i += 1
+        continue
+    if s == MARK:
+        i += 1
+        while i < n and (L[i].strip().startswith("sub_filter") or "/cw/loader.js" in L[i]): i += 1
+        continue
+    clean.append(L[i]); i += 1
+src = "".join(clean)
 # sub_filter_once / sub_filter_types may appear only once per block. If another
 # injector already declared them in the target blocks, only add our sub_filter line.
 once_types = ("            sub_filter_once on;\n"
@@ -35,8 +55,11 @@ for ln in src.splitlines(keepends=True):
     out.append(ln)
     if s in TARGETS:
         out.append(SUB)
+new = "".join(out)
+if new == orig:
+    print("cw: already patched"); sys.exit(0)
 shutil.copy2(CONF, CONF + ".cwbak")
-open(CONF, "w").write("".join(out))
+open(CONF, "w").write(new)
 t = subprocess.run(["nginx", "-t"], capture_output=True, text=True)
 if t.returncode != 0:
     shutil.copy2(CONF + ".cwbak", CONF)

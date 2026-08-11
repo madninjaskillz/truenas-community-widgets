@@ -4,8 +4,8 @@
 > in your admin session. **Read [SECURITY.md](SECURITY.md) first.**
 
 ## Requirements
-- **TrueNAS SCALE 25.10.x** (built and tested on 25.10.4; other versions may not work —
-  the WebUI injection is version-specific).
+- **TrueNAS SCALE 25.10.x or 26.0** (built and tested on 25.10.4 and 26.0.0-BETA.2;
+  other versions may not work — the WebUI injection is version-specific).
 - Apps (Docker) enabled, with internet access (to pull the `python:3.12-slim` base image
   when building the Hub, and to reach `raw.githubusercontent.com` for the catalog and
   in-UI Hub updates).
